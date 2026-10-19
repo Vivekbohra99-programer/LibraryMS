@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Q17 Benchmark Results – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Real-Time Verification</span>
+        <h1>Q17 Benchmark Results</h1>
+        <p>Measured live via Python native <code>tracemalloc</code> — zero synthetic approximations</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.performance') }}" class="btn btn-outline-secondary btn-sm">
+            Back to Performance
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-info mb-4" role="alert">
+    These metrics represent real heap snapshots captured before and after query execution.
+</div>
+
+<div class="row g-4">
+    <!-- Feature 2: On-Demand Loading -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Feature 2: On-Demand Data Loading</h5>
+                <span class="badge bg-success is-dot">{{ result.reduction_pct }}% Reduced</span>
+            </div>
+            <div class="card-body p-4">
+                <table class="table table-sm mb-3">
+                    <tr><td class="text-muted ps-0">Eager Load Peak Memory</td><td class="text-end fw-semibold text-danger pe-0">{{ result.eager_peak_kb }} KB</td></tr>
+                    <tr><td class="text-muted ps-0">On-Demand Peak Memory</td><td class="text-end fw-semibold text-success pe-0">{{ result.lazy_peak_kb }} KB</td></tr>
+                    <tr><td class="text-muted ps-0">Heap Reduction</td><td class="text-end pe-0"><span class="badge bg-success is-dot fs-6">{{ result.reduction_pct }}%</span></td></tr>
+                </table>
+
+                <div class="lg-meter mb-3">
+                    <div class="row-top">
+                        <span>Eager Load (All in RAM)</span>
+                        <span>{{ result.eager_peak_kb }} KB</span>
+                    </div>
+                    <div class="progress" style="height:12px">
+                        <div class="progress-bar bg-danger" style="width:100%"></div>
+                    </div>
+                </div>
+
+                <div class="lg-meter">
+                    <div class="row-top">
+                        <span>On-Demand Stream (Lazy)</span>
+                        <span class="text-success">{{ result.lazy_peak_kb }} KB</span>
+                    </div>
+                    <div class="progress" style="height:12px">
+                        <div class="progress-bar bg-success" style="width:{{ (result.lazy_peak_kb / result.eager_peak_kb * 100)|round if result.eager_peak_kb else 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 1: Compression -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Feature 1: Asset Compression</h5>
+                <span class="badge bg-success is-dot">{{ comp.saved_pct }}% Saved</span>
+            </div>
+            <div class="card-body p-4">
+                <table class="table table-sm mb-3">
+                    <tr><td class="text-muted ps-0">Original Size</td><td class="text-end fw-semibold pe-0">{{ "%.1f"|format(comp.raw_bytes / 1024) }} KB</td></tr>
+                    <tr><td class="text-muted ps-0">Compressed In-DB</td><td class="text-end fw-semibold text-success pe-0">{{ "%.1f"|format(comp.compressed_bytes / 1024) }} KB</td></tr>
+                    <tr><td class="text-muted ps-0">Storage Saved</td><td class="text-end pe-0"><span class="badge bg-success is-dot fs-6">{{ comp.saved_pct }}%</span></td></tr>
+                </table>
+                <div class="progress" style="height:12px">
+                    <div class="progress-bar bg-success" style="width:{{ comp.saved_pct }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 4: Cache -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Feature 4: Query Cache</h5>
+                <span class="badge bg-{{ 'success' if cache.hit_rate_pct > 40 else 'warning' }} is-dot">{{ cache.hit_rate_pct }}%</span>
+            </div>
+            <div class="card-body p-4">
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted ps-0">Active Entries</td><td class="text-end pe-0">{{ cache.entries }} / {{ cache.max_entries }} slots</td></tr>
+                    <tr><td class="text-muted ps-0">Hits / Misses</td><td class="text-end pe-0 text-success">{{ cache.hits }} <span class="text-muted">/ {{ cache.misses }}</span></td></tr>
+                    <tr><td class="text-muted ps-0">Hit Rate</td><td class="text-end pe-0"><span class="badge bg-{{ 'success' if cache.hit_rate_pct > 40 else 'warning' }}">{{ cache.hit_rate_pct }}%</span></td></tr>
+                    <tr><td class="text-muted ps-0">Evictions</td><td class="text-end pe-0">{{ cache.evictions }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Methodology -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-body p-4">
+                <span class="lg-eyebrow d-block mb-2">Audit Methodology</span>
+                <ul class="small text-muted mb-0" style="line-height:1.7">
+                    <li><strong>Eager load:</strong> <code>fetchall()</code> with force-decompression of descriptions and covers</li>
+                    <li><strong>On-demand:</strong> Paginated reads of the ordinary columns only. The compressed cover and description stay in the database (deferred columns) and nothing is decompressed</li>
+                    <li><strong>Compression:</strong> <code>zlib</code> for text, Pillow + <code>zlib</code> for binary covers</li>
+                    <li><strong>Cache:</strong> Memory-capped LRU with automatic eviction upon mutation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

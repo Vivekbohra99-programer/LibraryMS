@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Backup & Restore – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Data Continuity</span>
+        <h1>Backup & Restore</h1>
+        <p>Create snapshots of the SQLite database and restore point-in-time archives</p>
+    </div>
+    <div>
+        <form method="POST" action="{{ url_for('admin.create_backup') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-primary btn-sm">Create Snapshot</button>
+        </form>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th>Archive Filename</th>
+                    <th>Size</th>
+                    <th>Creation Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in backups %}
+                <tr>
+                    <td><span class="fw-semibold">{{ b.name }}</span></td>
+                    <td>{{ "%.1f"|format(b.size / 1024) }} KB</td>
+                    <td><small class="text-muted">{{ b.created.strftime('%Y-%m-%d %H:%M') if b.created else '' }}</small></td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <form method="POST" action="{{ url_for('admin.restore_backup', name=b.name) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-success" onclick="return confirm('Restore from {{ b.name }}? Current data will be backed up first.')">
+                                    Restore
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin.delete_backup', name=b.name) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete {{ b.name }}?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <div class="lg-empty">
+                            <h5>No backup archives found</h5>
+                            <p class="small text-muted mb-0">Create your first database snapshot to ensure data continuity.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

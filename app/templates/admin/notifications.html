@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Notifications – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">User Alerts</span>
+        <h1>Notifications</h1>
+        <p>System announcements, loan due notices, and activity updates</p>
+    </div>
+    <div>
+        <form method="POST" action="{{ url_for('admin.mark_all_read') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-primary btn-sm">Mark All Read</button>
+        </form>
+    </div>
+</div>
+
+{% if pagination %}
+<div class="card glass mb-4">
+    <div class="list-group list-group-flush">
+        {% for n in notifications %}
+        <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-{{ 'success' if n.type == 'success' else ('danger' if n.type == 'danger' else ('warning' if n.type == 'warning' else 'primary')) }} is-dot">
+                    {{ n.type|capitalize }}
+                </span>
+                <div>
+                    <span class="{{ 'fw-bold' if not n.read else '' }}">{{ n.message }}</span>
+                    <small class="text-muted d-block">{{ n.created_at.strftime('%b %d, %Y %H:%M') if n.created_at else '' }}</small>
+                </div>
+            </div>
+            {% if not n.read %}
+            <form method="POST" action="{{ url_for('admin.mark_read', notif_id=n.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-secondary" title="Mark as read">
+                    Dismiss
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <div class="lg-empty">
+                <h5>No notifications yet</h5>
+                <p class="small text-muted mb-0">Your notification inbox is completely empty.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{{ render_pagination(pagination, 'admin.notifications') }}
+{% endif %}
+{% endblock %}

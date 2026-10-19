@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}System Settings – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Configuration</span>
+        <h1>System Settings</h1>
+        <p>Loan rules, fine rate, cache and image limits, and how long records are kept</p>
+    </div>
+</div>
+
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for group, items in groups.items() %}
+    <h2 class="h5 fw-bold mb-3">{{ group }}</h2>
+    <div class="row g-4 mb-4">
+        {% for s in items %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card glass h-100">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <label class="form-label fw-bold" for="setting-{{ s.key }}">{{ s.label }}</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="setting-{{ s.key }}" name="{{ s.key }}"
+                                   value="{{ s.value }}" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}"
+                                   {% if s.step == 'any' %}inputmode="decimal"{% else %}inputmode="numeric"{% endif %}
+                                   aria-describedby="setting-{{ s.key }}-help">
+                            <span class="input-group-text">{{ s.unit }}</span>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2" id="setting-{{ s.key }}-help">
+                        {{ s.description }}. Allowed: {{ s.min }} to {{ s.max }}.
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary px-4">
+        Save Settings
+    </button>
+</form>
+{% endblock %}

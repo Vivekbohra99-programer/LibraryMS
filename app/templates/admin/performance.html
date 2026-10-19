@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Q17 Performance Analytics – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">TQM Project Optimization</span>
+        <h1>Q17 Performance Analytics</h1>
+        <p>Real-time memory telemetry, Python heap allocations, and compression efficiency</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('admin.performance_console') }}" class="btn btn-outline-secondary btn-sm">Console view</a>
+        <form method="POST" action="{{ url_for('admin.benchmark') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-warning btn-sm shadow-sm">
+                Run Memory Benchmark
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Architecture Pillars Summary -->
+<div class="card glass mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <span class="lg-eyebrow mb-0">Engine Architecture: Reduce Memory Usage</span>
+            <span class="badge bg-primary is-dot">Active Telemetry</span>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="p-3 card glass h-100">
+                    <strong class="small d-block mb-1 text-primary">1. Asset Compression</strong>
+                    <small class="text-muted d-block" style="line-height:1.4">Zlib compression on text descriptions and covers cuts disk and RAM overhead.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 card glass h-100">
+                    <strong class="small d-block mb-1 text-success">2. On-Demand Loading</strong>
+                    <small class="text-muted d-block" style="line-height:1.4">Strict pagination and deferred decompression avoid holding tables in memory.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 card glass h-100">
+                    <strong class="small d-block mb-1 text-warning">3. Bounded LRU Cache</strong>
+                    <small class="text-muted d-block" style="line-height:1.4">Memory-capped LRU cache with TTL eviction. Holds catalogue search pages (ids only), dashboard figures and landing-page counts.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 card glass h-100">
+                    <strong class="small d-block mb-1 text-danger">4. Automated Pruning</strong>
+                    <small class="text-muted d-block" style="line-height:1.4">VACUUM scheduling and transaction aging prune database bloat regularly.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Primary Real-Time Stat Tiles -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:1">
+            <div class="top">
+                <div class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                </div>
+                <span class="badge bg-primary is-dot">OS RSS</span>
+            </div>
+            <div>
+                <div class="val">{{ report.process.rss_mb }} <small style="font-size:1rem;font-weight:600">MB</small></div>
+                <div class="lbl">Process Memory (RSS)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:2">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-success)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <span class="badge bg-success is-dot">tracemalloc</span>
+            </div>
+            <div>
+                <div class="val text-success" data-count="{{ report.python_alloc.current_kb }}">{{ report.python_alloc.current_kb }}</div>
+                <div class="lbl">Python Heap (KB)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:3">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-warning)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                </div>
+                <span class="badge bg-warning is-dot">Peak</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ report.python_alloc.peak_kb }}">{{ report.python_alloc.peak_kb }}</div>
+                <div class="lbl">Peak Heap Alloc (KB)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:4">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-info)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+                <span class="lg-delta">Disk</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ report.db_size_kb }}">{{ report.db_size_kb }}</div>
+                <div class="lbl">SQLite DB Size (KB)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Compression Detailed Analytics with .lg-ring -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Pillar 1: Asset Compression</h5>
+                <span class="badge bg-success is-dot">{{ report.compression.saved_pct }}% Saved</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="lg-ring-wrap">
+                        <div class="lg-ring" data-value="{{ report.compression.saved_pct }}" style="--lg-c: var(--lg-success)"></div>
+                        <div class="lg-ring-label">
+                            {{ report.compression.saved_pct }}%
+                            <small>Saved</small>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Space Reduction Efficiency</h6>
+                        <p class="text-muted small mb-0">
+                            {{ "%.1f"|format(report.compression.saved_bytes / 1024) }} KB spared across book synopses and compressed book covers.
+                        </p>
+                    </div>
+                </div>
+
+                <table class="table table-sm align-middle mb-3">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted ps-0">Uncompressed Size</td>
+                            <td class="text-end fw-semibold pe-0">{{ "%.1f"|format(report.compression.raw_bytes / 1024) }} KB</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Stored In-DB</td>
+                            <td class="text-end fw-semibold pe-0 text-success">{{ "%.1f"|format(report.compression.compressed_bytes / 1024) }} KB</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Total Saved</td>
+                            <td class="text-end fw-bold pe-0 text-primary">{{ "%.1f"|format(report.compression.saved_bytes / 1024) }} KB</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {% if report.compression.raw_bytes > 0 %}
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Compression Distribution</span>
+                    <span>{{ report.compression.saved_pct }}% reduction</span>
+                </div>
+                <div class="progress" style="height:10px">
+                    <div class="progress-bar bg-success" style="width:{{ report.compression.saved_pct }}%" title="Saved space"></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Query Cache Performance with .lg-ring -->
+    <div class="col-md-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Pillar 3: Bounded Query Cache</h5>
+                <span class="badge bg-{{ 'success' if report.cache.hit_rate_pct > 50 else 'warning' }} is-dot">
+                    {{ report.cache.hit_rate_pct }}% Hit Rate
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="lg-ring-wrap">
+                        <div class="lg-ring" data-value="{{ report.cache.hit_rate_pct }}" style="--lg-c: var(--lg-accent)"></div>
+                        <div class="lg-ring-label">
+                            {{ report.cache.hit_rate_pct }}%
+                            <small>Hit Rate</small>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">LRU Cache Saturation</h6>
+                        <p class="text-muted small mb-0">
+                            {{ report.cache.entries }} active slots out of {{ report.cache.max_entries }} allocated with {{ report.cache.ttl }}s TTL.
+                        </p>
+                    </div>
+                </div>
+
+                <table class="table table-sm align-middle mb-3">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted ps-0">Cache Hits</td>
+                            <td class="text-end fw-semibold pe-0 text-success">{{ report.cache.hits }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Cache Misses</td>
+                            <td class="text-end fw-semibold pe-0 text-muted">{{ report.cache.misses }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">LRU Evictions</td>
+                            <td class="text-end fw-semibold pe-0">{{ report.cache.evictions }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Active Slots</td>
+                            <td class="text-end pe-0"><span class="badge bg-secondary">{{ report.cache.entries }} / {{ report.cache.max_entries }}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {% if report.cache.hits + report.cache.misses > 0 %}
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Hit Rate Ratio</span>
+                    <span>{{ report.cache.hit_rate_pct }}% hits</span>
+                </div>
+                <div class="progress" style="height:10px">
+                    <div class="progress-bar bg-success" style="width:{{ report.cache.hit_rate_pct }}%"></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card glass">
+            <div class="card-body p-4">
+                <span class="lg-eyebrow d-block mb-3">Storage Volumes</span>
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted border-0 ps-0">SQLite Database File</td><td class="text-end border-0 pe-0 fw-semibold">{{ report.db_size_kb }} KB</td></tr>
+                    <tr><td class="text-muted border-0 ps-0">Upload Storage Directory</td><td class="text-end border-0 pe-0 fw-semibold">{{ report.upload_size_kb }} KB</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card glass">
+            <div class="card-body p-4">
+                <span class="lg-eyebrow d-block mb-2">Telemetry Methodology</span>
+                <p class="text-muted small mb-0" style="line-height:1.6">
+                    All metrics are actively gathered from the OS runtime via <code>psutil</code> (Resident Set Size) and Python's native <code>tracemalloc</code> framework. Run the memory benchmark tool to test eager vs. on-demand memory allocations under synthetic query workloads.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{#- Skeuomorphic view of the Q17 performance report. Standalone page (does not extend base.html),
+    so none of the Bootstrap / liquid-glass styling applies here. Every number comes from `report`
+    (full_performance_report()); nothing on this page is simulated. -#}
+{%- set p = report.process %}
+{%- set h = report.python_alloc %}
+{%- set c = report.compression %}
+{%- set k = report.cache %}
+{%- set looked = k.hits + k.misses %}
+{%- set lit = ((k.entries / k.max_entries * 20)|round(0, 'ceil')|int) if k.max_entries else 0 %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Performance console – LibraryMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/skeuo.css') }}?v=1">
+  <script>try{var t=localStorage.getItem('lg-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body>
+<div class="chassis">
+  <i class="screw a"></i><i class="screw b"></i><i class="screw c"></i><i class="screw d"></i>
+
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+      <div><h1>Performance console</h1><p class="sub">LibraryMS, goal Q17: reduce memory usage</p></div>
+    </div>
+    <nav class="keys" aria-label="Navigate">
+      <a class="key" href="{{ url_for('dashboard.index') }}"><span class="led"></span><span class="dome"></span><span>dashboard</span></a>
+      <a class="key" href="{{ url_for('admin.performance') }}"><span class="led"></span><span class="dome"></span><span>classic</span></a>
+    </nav>
+    <button class="sw" id="theme" type="button" role="switch" aria-checked="false" aria-label="Night mode"><span class="track"><span class="thumb"></span></span><span id="themeLbl">day</span></button>
+  </header>
+
+  {%- with messages = get_flashed_messages(with_categories=true) %}
+  {%- if messages %}
+  <div class="lcd flash" role="status">
+    {%- for cat, text in messages %}<div class="line">{{ text }}</div>{% endfor %}
+  </div>
+  {%- endif %}
+  {%- endwith %}
+
+  <section class="module" aria-labelledby="h-mem">
+    <h2 id="h-mem">Memory</h2>
+    <div class="c-mem">
+      <div class="gauge" role="img" aria-label="Process memory: {{ p.rss_mb }} megabytes resident" data-value="{{ p.rss_mb }}" data-unit="MB resident (RSS)"></div>
+      <div class="lcd">
+        <div class="row"><span>rss</span><span>{{ p.rss_mb }} MB</span></div>
+        <div class="row"><span>virtual</span><span>{{ p.vms_mb }} MB</span></div>
+        <div class="row"><span>heap now</span><span>{{ h.current_kb }} KB</span></div>
+        <div class="row"><span>heap peak</span><span>{{ h.peak_kb }} KB</span></div>
+      </div>
+      <div class="stack">
+        <div class="gauge sm" role="img" aria-label="Python heap: {{ h.current_kb }} kilobytes now, peak {{ h.peak_kb }}" data-value="{{ h.current_kb }}" data-mark="{{ h.peak_kb }}" data-unit="KB heap"></div>
+        <p class="cap">heap now, red tab = peak</p>
+      </div>
+    </div>
+    <p class="note">RSS comes from psutil, the heap from tracemalloc. Both describe this server process at the moment the page loaded.</p>
+  </section>
+
+  <div class="pair">
+    <section class="module" aria-labelledby="h-comp">
+      <h2 id="h-comp">Compression</h2>
+      <div class="c-gl">
+        <div class="gauge sm" role="img" aria-label="Storage saved by compression: {{ c.saved_pct }} percent" data-value="{{ c.saved_pct }}" data-max="100" data-unit="% saved"></div>
+        <div class="lcd">
+          <div class="row"><span>original</span><span>{{ "%.1f"|format(c.raw_bytes / 1024) }} KB</span></div>
+          <div class="row"><span>stored</span><span>{{ "%.1f"|format(c.compressed_bytes / 1024) }} KB</span></div>
+          <div class="row"><span>saved</span><span>{{ "%.1f"|format(c.saved_bytes / 1024) }} KB</span></div>
+        </div>
+      </div>
+      <p class="note">Book descriptions and covers, stored compressed in the database and expanded only when a book is opened.</p>
+    </section>
+
+    <section class="module" aria-labelledby="h-cache">
+      <h2 id="h-cache">Query cache</h2>
+      <div class="c-gl">
+        <div class="gauge sm" role="img" aria-label="Cache hit rate: {{ k.hit_rate_pct }} percent" data-value="{{ k.hit_rate_pct }}" data-max="100" data-unit="% hits"></div>
+        <div class="stack">
+          <div class="lcd">
+            <div class="row"><span>hits</span><span>{{ k.hits }}</span></div>
+            <div class="row"><span>misses</span><span>{{ k.misses }}</span></div>
+            <div class="row"><span>evictions</span><span>{{ k.evictions }}</span></div>
+            <div class="row"><span>ttl</span><span>{{ k.ttl }} s</span></div>
+          </div>
+          <div>
+            <div class="barlab"><span>slots in use</span><span>{{ k.entries }} / {{ k.max_entries }}</span></div>
+            <div class="ledbar" role="img" aria-label="{{ k.entries }} of {{ k.max_entries }} cache slots in use">
+              {%- for i in range(20) %}<i class="led{{ ' on' if i < lit }}"></i>{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note">{% if looked == 0 %}Nothing has gone through the cache since the server started (catalogue searches, dashboard figures, landing-page counts), so the hit rate is 0 for lack of data, not for lack of hits.{% else %}Hit rate is hits divided by all lookups since the server started.{% endif %}</p>
+    </section>
+  </div>
+
+  <section class="module" aria-labelledby="h-run">
+    <h2 id="h-run">Storage and benchmark</h2>
+    <div class="c-run">
+      <div class="lcd" aria-live="polite">
+        <div class="row"><span>db file</span><span>{{ report.db_size_kb }} KB</span></div>
+        <div class="row"><span>uploads</span><span>{{ report.upload_size_kb }} KB</span></div>
+        <div class="line" id="runMsg" style="margin-top:6px">press the red key to compare eager and lazy loading</div>
+      </div>
+      <form class="runkey" id="benchForm" method="post" action="{{ url_for('admin.benchmark') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="tbtn rec" type="submit" aria-label="Run memory benchmark"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/></svg></button>
+        <span>run benchmark</span>
+      </form>
+    </div>
+    <p class="note">The benchmark loads every book eagerly, then page by page, and compares the peak heap each way with tracemalloc. It can take a few seconds.</p>
+  </section>
+
+  <footer class="foot">
+    <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <p>Live values from this server. Reload the page to take a new reading.</p>
+  </footer>
+</div>
+<script src="{{ url_for('static', filename='js/skeuo.js') }}?v=1" defer></script>
+</body>
+</html>

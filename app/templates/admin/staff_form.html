@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Add Staff – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Personnel Directory</span>
+        <h1>Add Staff Account</h1>
+        <p>Grant librarian or administrator authorization privileges</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-5">
+        <div class="card glass">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="staff-user">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="staff-user" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="staff-email">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="staff-email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="staff-pass">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="staff-pass" name="password" required minlength="6">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="staff-role">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="staff-role" name="role">
+                            <option value="librarian">Librarian</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Create Account
+                        </button>
+                        <a href="{{ url_for('admin.staff') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
