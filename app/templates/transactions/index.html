@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Transactions – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Circulation Register</span>
+        <h1>Transactions</h1>
+        <p>Complete borrowing history, active loans, returns, and overdue tracking</p>
+    </div>
+    {% if current_user.is_staff %}
+    <div>
+        <a href="{{ url_for('transactions.issue') }}" class="btn btn-warning btn-sm">Issue Book</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card glass mb-4">
+    <div class="card-body p-3">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <input type="search" class="form-control form-control-sm" name="q" value="{{ search }}" placeholder="Search by book title or member name… (Press /)" aria-label="Search transactions" data-lg-search>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select form-select-sm" name="status" aria-label="Filter status">
+                    <option value="">All Statuses (Active & Returned)</option>
+                    <option value="issued" {{ 'selected' if status == 'issued' }}>Currently Issued</option>
+                    <option value="overdue" {{ 'selected' if status == 'overdue' }}>Overdue (not yet returned)</option>
+                    <option value="returned" {{ 'selected' if status == 'returned' }}>Returned</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100" type="submit">Filter Records</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if pagination %}
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th width="60">ID</th>
+                    <th>Book</th>
+                    <th>Member</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Renewals</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td><small class="text-muted">#{{ t.id }}</small></td>
+                    <td>
+                        <a href="{{ url_for('books.detail', book_id=t.book_id) }}" class="fw-semibold text-truncate d-inline-block" style="max-width:200px" title="{{ t.book.title if t.book else '' }}">
+                            {{ t.book.title if t.book else '—' }}
+                        </a>
+                    </td>
+                    <td><span>{{ t.member.name if t.member else '—' }}</span></td>
+                    <td><small class="text-muted">{{ t.issue_date.strftime('%b %d, %Y') if t.issue_date else '' }}</small></td>
+                    <td>
+                        <span class="{{ 'text-danger fw-bold' if t.is_overdue else '' }}">
+                            {{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}
+                        </span>
+                    </td>
+                    <td><small class="text-muted">{{ t.return_date.strftime('%b %d, %Y') if t.return_date else '—' }}</small></td>
+                    <td><span class="badge bg-secondary">{{ t.renewal_count }}</span></td>
+                    <td>
+                        {% if t.status == 'returned' %}
+                        <span class="badge bg-success is-dot">Returned</span>
+                        {% elif t.is_overdue %}
+                        <span class="badge bg-danger is-dot">Overdue ({{ t.overdue_days }}d)</span>
+                        {% if t.overdue_days > 0 %}<small class="d-block text-danger fw-semibold mt-1" title="Accrued so far at ₹{{ '%.2f'|format(fine_rate) }} per day. Charged when the book is returned.">₹{{ "%.2f"|format(t.accrued_fine(fine_rate)) }} accrued</small>{% endif %}
+                        {% else %}
+                        <span class="badge bg-warning is-dot">Issued</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if t.status == 'issued' and current_user.is_staff %}
+                        <a href="{{ url_for('transactions.return_book', txn_id=t.id) }}" class="btn btn-sm btn-outline-success me-1" title="Process Return">
+                            Return
+                        </a>
+                        {% endif %}
+                        {% if t.status == 'issued' and not t.is_overdue %}
+                        <form method="POST" action="{{ url_for('transactions.renew', txn_id=t.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-primary" title="Renew Loan" onclick="return confirm('Renew this book loan for {{ loan_days }} days?')">
+                                Renew
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <div class="lg-empty">
+                            <h5>No transactions found</h5>
+                            <p class="small text-muted mb-0">No records match the selected status or query.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mt-4">
+    {{ render_pagination(pagination, 'transactions.index', status=status, q=search) }}
+</div>
+{% endif %}
+{% endblock %}

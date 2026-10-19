@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Issue Book – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Desk Checkout</span>
+        <h1>Issue Book</h1>
+        <p>Record a new book checkout to an eligible library patron</p>
+    </div>
+    <div>
+        <a href="{{ url_for('transactions.index') }}" class="btn btn-outline-secondary btn-sm">
+            Back to Transactions
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card glass">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label" for="bookSelect">Select Book <span class="text-danger">*</span></label>
+                            <select class="form-select" name="book_id" required id="bookSelect">
+                                <option value="">Choose a title…</option>
+                                {% for b in books %}
+                                <option value="{{ b.id }}" {{ 'selected' if request.args.get('book_id')|int == b.id }}>
+                                    {{ b.title }} ({{ b.available_quantity }} available)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted mt-1 d-block">Only books with available copies can be selected</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="memberSelect">Select Member <span class="text-danger">*</span></label>
+                            <select class="form-select" name="member_id" required id="memberSelect">
+                                <option value="">Choose a member…</option>
+                                {% for m in members %}
+                                <option value="{{ m.id }}">
+                                    {{ m.name }} ({{ m.remaining_capacity }} slots open)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted mt-1 d-block">Active members with available borrowing slots</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4" role="alert">
+                        The standard loan duration is {{ loan_days }} day{{ '' if loan_days == 1 else 's' }}. {% if max_renewals %}Members can renew up to {{ max_renewals }} time{{ '' if max_renewals == 1 else 's' }} unless the title is overdue.{% else %}Renewals are switched off.{% endif %}
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-warning px-4">
+                            Confirm Issue
+                        </button>
+                        <a href="{{ url_for('transactions.index') }}" class="btn btn-outline-secondary px-4">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
