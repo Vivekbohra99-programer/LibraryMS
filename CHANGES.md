@@ -1,6 +1,6 @@
 # CHANGES — Library Management System (Q17: Reduce Memory Usage)
 
-This file lists what changed compared with the project you gave me, what was found broken and fixed, and what is still **not** done. It is not the TQM report.
+This file records the status of the 18 requirement-sheet items, what was found broken and fixed during testing, and what is still **not** done. The TQM report is a separate Word document.
 
 ## 1. Status of the 18 requirement-sheet items
 
@@ -22,8 +22,8 @@ This file lists what changed compared with the project you gave me, what was fou
 | 14 | Responsive UI, Light and Dark | Done. Two looks (Glass, Skeuomorphic) x light/dark x desktop/phone; phone tables become cards | see section 3 |
 | 15 | Database Backup and Recovery | Done. Snapshots, strict file-name pattern, integrity check before restore, safety copy first | `services/purge.py` |
 | 16 | Security and Data Integrity | Done, with listed limits (section 5) | README "Security and Data Integrity" |
-| 17 | Automated Testing and QA | Done. 246 pytest tests, plus a 123-check live end-to-end pass against the unzipped package | `tests/`, `e2e/` (not in the zip) |
-| 18 | Project Documentation and TQM Report | **README and this file are done. The TQM report is NOT written**, by your instruction | — |
+| 17 | Automated Testing and QA | Done. 246 pytest tests, plus a 123-check live end-to-end pass run earlier (not re-run on this copy) | `tests/` |
+| 18 | Project Documentation and TQM Report | README and this file are in the repository. The TQM report is a separate Word document, not stored here | README.md |
 
 ## 2. Settings that now have an effect
 
@@ -35,13 +35,13 @@ Every value on the Settings page changes behaviour, is range-checked, and one ba
 - Default can be changed with the environment variable `LMS_DEFAULT_SKIN=skeuo` (anything else means glass).
 - Every skeuo rule is scoped to `html[data-skin="skeuo"]`; a test checks each selector, and a pixel comparison of 24 pages showed the Glass look unchanged by the new stylesheet beyond render noise.
 - Phones (below 576 px): tables turn into labelled cards. Laptops (992–1599 px): table padding tightened.
-- I did change the shared Glass look slightly to pass contrast: deeper blue accent, darker secondary text, a scrim behind the landing-page cover, tighter table padding at laptop widths, a dark backing behind the top-bar search field in dark mode.
+- The shared Glass look was changed slightly to pass contrast: deeper blue accent, darker secondary text, a scrim behind the landing-page cover, tighter table padding at laptop widths, a dark backing behind the top-bar search field in dark mode.
 
 ## 3a. Page transitions (added after the first delivery)
 
 Every page change is now animated: a cross-fade out (Chromium/Safari view transitions; a JS fade-out elsewhere), then the header and blocks rise in one after another and the first table rows fill in; a thin loading line runs along the top. Both looks have it (Skeuomorphic settles with a small overshoot and an amber LED line). Downloads, modified clicks, new-tab links and anchors are never intercepted; "reduce motion" switches it off; the lite effects mode shortens it. Details and tuning: README, *Look and Feel*.
 
-How it was checked: 24 new tests (`tests/test_transitions.py`); 21 live checks on real navigations in Chromium in all four look/theme combinations (view transition actually ran, blocks stagger, rows fill in, nothing left hidden or transformed, exports download untouched, Ctrl+click ignored, back button not stuck mid-fade, reduced motion collapses it); and screen recordings of a real page change in both looks. One bug of my own was found this way and fixed before delivery: the first version could flash the new page fully visible and then restart its entrance; the styles now apply from the first paint.
+How it was checked: 24 new tests (`tests/test_transitions.py`); 21 live checks on real navigations in Chromium in all four look/theme combinations (view transition actually ran, blocks stagger, rows fill in, nothing left hidden or transformed, exports download untouched, Ctrl+click ignored, back button not stuck mid-fade, reduced motion collapses it); and screen recordings of a real page change in both looks. One bug of the first version was found this way and fixed before delivery: the first version could flash the new page fully visible and then restart its entrance; the styles now apply from the first paint.
 
 Not verified: Firefox and Safari themselves (the Firefox path was forced and tested inside Chromium). Smoothness was judged on software rendering; frame rate on a real GPU should be better, not worse. If any page feels slow on your machine, set the *lite* effects switch, or remove section 16 of `liquid-glass.css`.
 
@@ -66,38 +66,16 @@ Earlier in the project (see the README for detail): login lockout, security head
 | Check | Result |
 |-------|--------|
 | pytest | **246 passed** (159 before this round + 87 new: 21 skin, 42 contrast, 24 page transitions) |
-| Live end-to-end against the unzipped package, fresh database | 123 checks (see section 6 for the final run) |
+| Live end-to-end against the unzipped package, fresh database | 123 checks (run earlier; see section 6) |
 | Contrast audit, real pixels, 24 pages, Glass and Skeuo, light and dark, 1440 px and 390 px | **0 failing** in 6 of 8 combinations |
-| Remaining flagged items | (a) Glass light 1440: dashboard "Add Member" reported at 3.38:1 once. A pixel probe of that button at rest shows every pixel at 5.2:1 or better, so I treat it as a scroll-position artefact, but I did not reproduce the number. (b) Skeuo light 390: a title on a decorative book cover in the landing hero sits behind a floating tag. Decorative, not content |
+| Remaining flagged items | (a) Glass light 1440: dashboard "Add Member" reported at 3.38:1 once. A pixel probe of that button at rest shows every pixel at 5.2:1 or better, so it is treated as a scroll-position artefact, but the number was not reproduced. (b) Skeuo light 390: a title on a decorative book cover in the landing hero sits behind a floating tag. Decorative, not content |
 | Q17 numbers | In README ("How These Features Reduce Memory"). They vary with data and machine; re-measure on the Performance page before quoting |
 
 ## 6. Not done / limits
 
-- **TQM report** — not written (you said to finish the main project). I can produce a Word report from the real measured numbers if you want it.
 - **Browsers and devices:** checked in Chromium only. Firefox, Safari and real phones were not tested. Screenshots used locally served fonts.
 - **Contrast audit covers text only**, not icons, borders or focus rings.
 - **Wide tables** still scroll sideways inside their card at 992–1279 px (measured at 1024 px: books, members, loans, fines, a member's loan history and the librarian dashboard; none at 1280 px and wider). Phones are not affected, because tables become cards there.
 - **Security limits:** plain HTTP (use a TLS proxy), no Content-Security-Policy, sign-out is a link not a POST, lockout counters live in one process's memory and reset on restart.
 - **Default passwords are public** (`admin123`, `librarian123`, `member123`). Change them before anyone else can reach the app.
 - **SQLite** only; fine for a college project, not for many concurrent writers.
-
-## 7. How to apply
-
-**Easiest:** unzip `library_final.zip` as a new folder, then copy your old `instance/library.db` into its `instance/` folder if you want to keep your data. There are no database schema changes, so an existing database works as is.
-
-**Or patch your current folder** with `changed_files.zip`:
-1. Close the running server and **back up the whole project folder** (and `instance/library.db`).
-2. Unzip `changed_files.zip` over your project. It only contains files that differ from the project you sent.
-3. Do not delete `instance/`, `uploads/` or `backups/`.
-4. `pip install -r requirements.txt` (unchanged, but harmless), then `python run.py`.
-5. Hard-refresh the browser (Ctrl+F5) once so the new stylesheets (`liquid-glass.css?v=10`, `skeuo-app.css?v=4`, `liquid-glass.js?v=6`) load.
-
-Then run `python -m pytest -q` (about 3 minutes). Expect 246 passed.
-
-## 8. Files
-
-**New:** `app/services/analytics.py`, `catalogue.py`, `throttle.py`; `app/static/css/skeuo-app.css`, `skeuo.css`; `app/static/js/skeuo.js`; `app/templates/admin/performance_console.html`; `app/templates/partials/analytics_panel.html`; `tests/test_completion.py`, `test_contrast.py`, `test_on_demand.py`, `test_search.py`, `test_security.py`, `test_settings_effects.py`, `test_skin.py`, `test_transitions.py`.
-
-**Changed:** `README.md`, `config.py`, `app/__init__.py`, `app/extensions.py`, models (`book`, `setting`, `transaction`), routes (`admin`, `auth`, `authors`, `books`, `categories`, `dashboard`, `fines`, `members`, `reports`, `transactions`), services (`compression`, `export`, `purge`), `liquid-glass.css`, `liquid-glass.js`, and 32 templates (including `base.html`, which now wraps public pages in one `div`). The exact list is what `changed_files.zip` contains.
-
-The verification scripts (`contrast_audit.py`, the live E2E, screenshot tools) live outside the project folder and are not in either zip.
