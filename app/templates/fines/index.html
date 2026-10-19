@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Fines Management – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Financial Accounts</span>
+        <h1>Fines Management</h1>
+        <p>Outstanding and settled late return penalties</p>
+    </div>
+    {% if totals %}
+    <div class="d-flex gap-2 flex-wrap">
+        <span class="badge bg-secondary">Total: ₹{{ "%.2f"|format(totals.total) }}</span>
+        <span class="badge bg-success is-dot">Paid: ₹{{ "%.2f"|format(totals.paid) }}</span>
+        <span class="badge bg-danger is-dot">Unpaid: ₹{{ "%.2f"|format(totals.unpaid) }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card glass mb-3">
+    <div class="card-body p-3">
+        <form method="GET" class="d-flex gap-2 align-items-center">
+            <select class="form-select form-select-sm" name="paid" style="max-width:200px" aria-label="Filter payment status">
+                <option value="">All Statuses</option>
+                <option value="paid" {{ 'selected' if paid_filter == 'paid' }}>Paid Only</option>
+                <option value="unpaid" {{ 'selected' if paid_filter == 'unpaid' }}>Unpaid Only</option>
+            </select>
+            <button class="btn btn-sm btn-primary px-3" type="submit">Filter Fines</button>
+        </form>
+    </div>
+</div>
+
+{% if pagination %}
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th width="60">#</th>
+                    <th>Member</th>
+                    <th>Book Title</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Assessment Date</th>
+                    {% if current_user.is_staff %}<th class="text-end">Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in fines %}
+                <tr>
+                    <td><small class="text-muted">#{{ f.id }}</small></td>
+                    <td><span class="fw-medium">{{ f.member.name if f.member else '—' }}</span></td>
+                    <td>
+                        <span class="text-truncate d-inline-block" style="max-width:240px">
+                            {{ f.transaction.book.title if f.transaction and f.transaction.book else '—' }}
+                        </span>
+                    </td>
+                    <td><strong class="{{ 'text-danger' if not f.paid else 'text-success' }}">₹{{ "%.2f"|format(f.amount) }}</strong></td>
+                    <td>
+                        {% if f.paid %}
+                        <span class="badge bg-success is-dot">Paid</span>
+                        {% else %}
+                        <span class="badge bg-danger is-dot">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ f.created_at.strftime('%b %d, %Y') if f.created_at else '' }}</small></td>
+                    {% if current_user.is_staff %}
+                    <td class="text-end">
+                        {% if not f.paid %}
+                        <form method="POST" action="{{ url_for('fines.pay', fine_id=f.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-success" onclick="return confirm('Mark fine as paid?')">
+                                Settle Fine
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted small">Cleared</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <div class="lg-empty">
+                            <h5>No fines recorded</h5>
+                            <p class="small text-muted mb-0">All accounts are settled and free of penalties.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mt-4">
+    {{ render_pagination(pagination, 'fines.index', paid=paid_filter) }}
+</div>
+{% endif %}
+{% endblock %}
