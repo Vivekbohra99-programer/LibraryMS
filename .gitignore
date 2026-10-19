@@ -1,0 +1,27 @@
+# Secrets and local data - never commit these
+instance/
+.env
+*.db
+*.sqlite3
+*.key
+
+# Uploaded files and backups made at run time (the folders stay, via .gitkeep)
+uploads/*
+backups/*
+!uploads/.gitkeep
+!backups/.gitkeep
+library_management_system/data/*
+!library_management_system/data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+.venv/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
