@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Login – LibraryMS{% endblock %}
+{% block public_content %}
+<div class="lg-auth">
+    <div class="card glass">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+                <span class="lg-logo mx-auto mb-3" style="width:52px;height:52px;border-radius:18px" aria-hidden="true">
+                    <svg style="width:28px;height:28px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </span>
+                <span class="lg-eyebrow d-block">Welcome Back</span>
+                <h2 class="fw-bold mt-1">Sign In</h2>
+                <p class="text-muted small">Access your loans, holds, and fines</p>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="user-addon">
+                            <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" aria-label="Username" aria-describedby="user-addon" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="pass-addon">
+                            <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" aria-label="Password" aria-describedby="pass-addon" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                    Sign In
+                </button>
+            </form>
+            <div class="text-center">
+                <span class="text-muted small">Don't have an account?</span>
+                <a href="{{ url_for('auth.register') }}" class="ms-1 small fw-semibold">Register here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
