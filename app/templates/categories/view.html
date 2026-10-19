@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Category Stacks</span>
+        <h1>{{ category.name }}</h1>
+        <p class="text-muted">{{ category.description or 'No category description provided.' }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('categories.edit', cat_id=category.id) }}" class="btn btn-outline-primary btn-sm">Edit</a>
+        <form method="POST" action="{{ url_for('categories.delete', cat_id=category.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this category?')">Delete</button>
+        </form>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Books in {{ category.name }}</h5>
+        {% if pagination %}<span class="badge bg-primary">{{ pagination.total }} titles</span>{% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Available Copies</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in books %}
+                <tr>
+                    <td><a href="{{ url_for('books.detail', book_id=b.id) }}" class="fw-semibold">{{ b.title }}</a></td>
+                    <td>{{ b.author.name if b.author else '—' }}</td>
+                    <td>
+                        <span class="{{ 'text-success fw-semibold' if b.available_quantity > 0 else 'text-danger' }}">
+                            {{ b.available_quantity }} / {{ b.quantity }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-5">
+                        <div class="lg-empty">
+                            <h5>No books in this category</h5>
+                            <p class="small text-muted mb-0">No catalog titles are assigned to this category yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ render_pagination(pagination, 'categories.view', cat_id=category.id) }}
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ author.name }} – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Author Profile</span>
+        <h1>{{ author.name }}</h1>
+        {% if author.bio %}
+        <p class="text-muted">{{ author.bio }}</p>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('authors.edit', author_id=author.id) }}" class="btn btn-outline-primary btn-sm">
+            Edit
+        </a>
+        <form method="POST" action="{{ url_for('authors.delete', author_id=author.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this author?')">
+                Delete
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Tabs for Author Books / Bio -->
+<div class="mb-4">
+    <ul class="nav nav-pills mb-3" id="authorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-books" data-bs-toggle="pill" data-bs-target="#pane-books" type="button" role="tab" aria-selected="true">
+                Books by {{ author.name }} ({{ books|length if books else 0 }})
+            </button>
+        </li>
+        {% if author.bio %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-about" data-bs-toggle="pill" data-bs-target="#pane-about" type="button" role="tab" aria-selected="false">
+                About Author
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="tab-content" id="authorTabsContent">
+        <!-- Books Pane -->
+        <div class="tab-pane fade show active" id="pane-books" role="tabpanel">
+            <div class="card glass">
+                {% if books %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Availability</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in books %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('books.detail', book_id=b.id) }}" class="fw-semibold">{{ b.title }}</a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ b.category.name if b.category else 'General' }}</span>
+                                </td>
+                                <td>
+                                    <span class="{{ 'text-success fw-semibold' if b.available_quantity > 0 else 'text-danger' }}">
+                                        {{ b.available_quantity }} / {{ b.quantity }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    {% if b.available_quantity > 0 %}
+                                    <span class="badge bg-success is-dot">Available</span>
+                                    {% else %}
+                                    <span class="badge bg-danger is-dot">Unavailable</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body lg-empty">
+                    <h5>No books found for this author</h5>
+                    <p class="small text-muted mb-0">No titles are associated with this author profile.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if author.bio %}
+        <!-- About Pane -->
+        <div class="tab-pane fade" id="pane-about" role="tabpanel">
+            <div class="card glass">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="lg-avatar" style="width:48px;height:48px;font-size:1.2rem">
+                            {{ author.name[0]|upper }}
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ author.name }}</h5>
+                            <span class="badge bg-primary">{{ books|length if books else 0 }} titles</span>
+                        </div>
+                    </div>
+                    <p class="text-muted leading-relaxed" style="line-height:1.7">{{ author.bio }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{{ render_pagination(pagination, 'authors.view', author_id=author.id) }}
+{% endblock %}

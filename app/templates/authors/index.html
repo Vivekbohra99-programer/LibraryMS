@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Authors – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Literary Creators</span>
+        <h1>Authors</h1>
+        <p>Browse authors and their published works in the collection</p>
+    </div>
+    <div>
+        <a href="{{ url_for('authors.add') }}" class="btn btn-primary btn-sm">Add Author</a>
+    </div>
+</div>
+
+<div class="card glass mb-3">
+    <div class="card-body p-3">
+        <form method="GET" class="d-flex gap-2">
+            <input type="search" class="form-control form-control-sm" name="q" value="{{ search }}" placeholder="Search authors… (Press /)" aria-label="Search authors" data-lg-search>
+            <button class="btn btn-sm btn-primary px-3" type="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Books in Library</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in authors %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('authors.view', author_id=a.id) }}" class="fw-semibold">{{ a.name }}</a>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">{{ a.books.count() }} titles</span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{{ url_for('authors.edit', author_id=a.id) }}" class="btn btn-sm btn-outline-primary" title="Edit author">Edit</a>
+                            <form method="POST" action="{{ url_for('authors.delete', author_id=a.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this author?')">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center py-5 text-muted">
+                        <div class="lg-empty">
+                            <h5>No authors found</h5>
+                            <p class="small text-muted mb-3">No authors match your query.</p>
+                            <a href="{{ url_for('authors.add') }}" class="btn btn-primary btn-sm">Add First Author</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ render_pagination(pagination, 'authors.index', q=search) }}
+{% endblock %}
