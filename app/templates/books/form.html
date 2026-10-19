@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Book – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Catalog Maintenance</span>
+        <h1>{{ action }} Book</h1>
+        <p>{{ 'Register a new title into the library collection' if action == 'Add' else 'Modify book metadata and inventory parameters' }}</p>
+    </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card glass">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="book-title">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="book-title" name="title" value="{{ book.title if book else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="book-isbn">ISBN</label>
+                            <input type="text" class="form-control" id="book-isbn" name="isbn" value="{{ book.isbn if book and book.isbn else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="book-author">Author <span class="text-danger">*</span></label>
+                            <select class="form-select" id="book-author" name="author_id" required>
+                                <option value="">Select Author</option>
+                                {% for a in authors %}
+                                <option value="{{ a.id }}" {{ 'selected' if book and book.author_id == a.id }}>{{ a.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="book-category">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="book-category" name="category_id" required>
+                                <option value="">Select Category</option>
+                                {% for c in categories %}
+                                <option value="{{ c.id }}" {{ 'selected' if book and book.category_id == c.id }}>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="book-publisher">Publisher</label>
+                            <input type="text" class="form-control" id="book-publisher" name="publisher" value="{{ book.publisher if book else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="book-edition">Edition</label>
+                            <input type="text" class="form-control" id="book-edition" name="edition" value="{{ book.edition if book else '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" for="book-year">Year</label>
+                            <input type="number" class="form-control" id="book-year" name="publication_year" value="{{ book.publication_year if book and book.publication_year else '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" for="book-qty">Quantity</label>
+                            <input type="number" class="form-control" id="book-qty" name="quantity" value="{{ book.quantity if book else 1 }}" min="{{ 0 if book else 1 }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="book-desc">Description</label>
+                            <textarea class="form-control" id="book-desc" name="description" rows="4">{{ book.description if book else '' }}</textarea>
+                            <small class="text-muted">Will be compressed before storage (Q17 Feature 1)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card glass mb-3">
+                <div class="card-body p-4">
+                    <label class="form-label" for="book-cover">Cover Image</label>
+                    {% if book and book.has_cover %}
+                    <div class="mb-3 text-center">
+                        <img src="{{ book.cover_url }}" width="200" height="300" class="img-fluid rounded mb-2" style="max-height:260px;object-fit:cover" loading="lazy" decoding="async" alt="Current cover">
+                        <form method="POST" action="{{ url_for('books.delete_cover', book_id=book.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Remove cover?')">Remove Cover</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    <input type="file" class="form-control" id="book-cover" name="cover" accept="image/*">
+                    <small class="text-muted d-block mt-1">JPEG, PNG, GIF, WebP. Resized and compressed on-demand (Q17).</small>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    {{ action }} Book
+                </button>
+                <a href="{{ url_for('books.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

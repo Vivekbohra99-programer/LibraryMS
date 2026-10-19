@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Catalogue – LibraryMS{% endblock %}
+{% block meta_description %}Browse our library catalogue with instant search and category filtering{% endblock %}
+{% if current_user.is_authenticated %}
+{% block content %}
+{{ catalogue_body() }}
+{% endblock %}
+{% else %}
+{% block public_content %}
+<div class="container py-3">
+{{ catalogue_body() }}
+</div>
+<footer class="lg-footer text-center mt-5">
+    <div class="container"><small class="text-muted">&copy; 2026 Library Management System — Q17: Reduce Memory Usage</small></div>
+</footer>
+{% endblock %}
+{% endif %}
+
+{% macro catalogue_body() %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="container-fluid px-0 py-2">
+    <!-- Header -->
+    <div class="lg-page-header">
+        <div>
+            <span class="lg-eyebrow">Public Stacks</span>
+            <h1>Book Catalogue</h1>
+            <p>Explore titles, filter by category or availability, and check borrowing status</p>
+        </div>
+        {% if pagination %}
+        <div>
+            <span class="badge bg-primary is-dot">
+                {{ pagination.total }} title(s) found
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Filters Glass Card -->
+    <div class="card glass mb-4">
+        <div class="card-body p-3 p-md-4">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label" for="search-input">Search Query</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="cat-search-addon">
+                            <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </span>
+                        <input type="search" class="form-control" id="search-input" name="q" value="{{ search }}" placeholder="Title, author or ISBN… (Press /)" aria-label="Search query" aria-describedby="cat-search-addon" data-lg-search>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label" for="filter-author">Author</label>
+                    <select class="form-select" id="filter-author" name="author" aria-label="Filter by author">
+                        <option value="">All Authors</option>
+                        {% for a in authors %}<option value="{{ a.id }}" {{ 'selected' if author_id == a.id }}>{{ a.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label" for="filter-category">Category</label>
+                    <select class="form-select" id="filter-category" name="category" aria-label="Filter by category">
+                        <option value="">All Categories</option>
+                        {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if category_id == c.id }}>{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label" for="filter-avail">Availability</label>
+                    <select class="form-select" id="filter-avail" name="availability" aria-label="Filter by availability">
+                        <option value="">All Copies</option>
+                        <option value="available" {{ 'selected' if availability == 'available' }}>Available Now</option>
+                        <option value="unavailable" {{ 'selected' if availability == 'unavailable' }}>Checked Out</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label" for="filter-sort">Sort By</label>
+                    <select class="form-select" id="filter-sort" name="sort" aria-label="Sort books">
+                        <option value="title" {{ 'selected' if sort == 'title' }}>Title (A-Z)</option>
+                        <option value="author" {{ 'selected' if sort == 'author' }}>Author</option>
+                        <option value="year" {{ 'selected' if sort == 'year' }}>Year</option>
+                        <option value="available" {{ 'selected' if sort == 'available' }}>Availability</option>
+                        <option value="newest" {{ 'selected' if sort == 'newest' }}>Newest Added</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-1">
+                    <button class="btn btn-primary w-100" type="submit" aria-label="Apply Filters">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Book Grid -->
+    {% if books %}
+    <div class="row g-3 g-md-4">
+        {% for book in books %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <a class="card lg-book lg-reveal h-100" style="--i:{{ loop.index0 % 4 }}" href="{{ url_for('books.detail', book_id=book.id) }}">
+                <div class="lg-cover">
+                    {% if book.has_cover %}
+                    <img src="{{ book.cover_url }}" width="400" height="600" loading="lazy" decoding="async" alt="{{ book.title }}">
+                    {% else %}
+                    <div class="k">{{ book.category.name if book.category else 'General' }}</div>
+                    <div class="t">{{ book.title }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h3>{{ book.title }}</h3>
+                    <div class="by">by {{ book.author.name if book.author else 'Unknown' }}</div>
+                </div>
+                <div class="meta">
+                    {% if book.is_available %}
+                    <span class="badge bg-success is-dot">{{ book.available_quantity }} in stock</span>
+                    {% else %}
+                    <span class="badge bg-danger is-dot">Out of Stock</span>
+                    {% endif %}
+                    <span class="small text-muted">{{ book.category.name if book.category else '' }}</span>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-4">
+        {{ render_pagination(pagination, 'books.catalogue', q=search, author=author_id or '', category=category_id or '', availability=availability, sort=sort) }}
+    </div>
+    {% else %}
+    <div class="card glass lg-empty">
+        <div class="ic" aria-hidden="true">
+            <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h5>No Titles Match Your Criteria</h5>
+        <p class="text-muted mb-3">Try adjusting your keywords, author filter, or availability parameters.</p>
+        <a href="{{ url_for('books.catalogue') }}" class="btn btn-outline-primary btn-sm">Clear All Filters</a>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
