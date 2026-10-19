@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">System Overview</span>
+        <h1>Admin Dashboard</h1>
+        <p>Operational health, circulation metrics, and Q17 resource telemetry</p>
+    </div>
+    <div>
+        <span class="badge bg-primary is-dot">Administrator</span>
+    </div>
+</div>
+
+<!-- Primary Stats -->
+<div class="row g-3 g-md-4 mb-3">
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:1">
+            <div class="top">
+                <div class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <span class="lg-delta">Inventory</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ stats.total_books }}">{{ stats.total_books }}</div>
+                <div class="lbl">Total Books</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:2">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-success)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <span class="badge bg-success is-dot">In Stacks</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ stats.available_copies }}">{{ stats.available_copies }}</div>
+                <div class="lbl">Available Copies</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:3">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-warning)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                </div>
+                <span class="lg-delta">On Loan</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ stats.issued_books }}">{{ stats.issued_books }}</div>
+                <div class="lbl">Issued Books</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:4">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <span class="badge bg-danger is-dot">Overdue</span>
+            </div>
+            <div>
+                <div class="val {{ 'text-danger' if stats.overdue_books > 0 else '' }}" data-count="{{ stats.overdue_books }}">{{ stats.overdue_books }}</div>
+                <div class="lbl">Overdue Books</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Stats: Members, Fines, Memory RSS -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:5">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-info)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <span class="lg-delta">Patrons</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ stats.total_members }}">{{ stats.total_members }}</div>
+                <div class="lbl">Registered Members</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:6">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-success)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <span class="badge bg-success is-dot">Settled</span>
+            </div>
+            <div>
+                <div class="val text-success">₹{{ "%.2f"|format(stats.paid_fines) }}</div>
+                <div class="lbl">Fines Collected</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:7">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <span class="badge bg-danger is-dot">Pending</span>
+            </div>
+            <div>
+                <div class="val text-danger">₹{{ "%.2f"|format(stats.unpaid_fines) }}</div>
+                <div class="lbl">Unpaid Fines</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:8">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-warning)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                </div>
+                <span class="badge bg-warning is-dot">Q17 RSS</span>
+            </div>
+            <div>
+                <div class="val">{{ "%.1f"|format(mem.rss_mb) }} MB</div>
+                <div class="lbl">Process Memory</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card glass mb-4">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="lg-eyebrow mb-0">Management Shortcuts</span>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('books.add') }}" class="btn btn-primary btn-sm">Add Book</a>
+                <a href="{{ url_for('members.add') }}" class="btn btn-success btn-sm">Add Member</a>
+                <a href="{{ url_for('transactions.issue') }}" class="btn btn-warning btn-sm">Issue Book</a>
+                <a href="{{ url_for('transactions.index', status='issued') }}" class="btn btn-info btn-sm">Return Book</a>
+                <a href="{{ url_for('admin.performance') }}" class="btn btn-outline-secondary btn-sm">Performance</a>
+                <a href="{{ url_for('admin.maintenance') }}" class="btn btn-outline-secondary btn-sm">Maintenance</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'partials/analytics_panel.html' %}
+
+<!-- Tabs: Transactions / Due Soon / Cache Performance -->
+<div class="mb-4">
+    <ul class="nav nav-pills mb-3" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-txns" data-bs-toggle="pill" data-bs-target="#pane-txns" type="button" role="tab" aria-selected="true">
+                Recent Transactions ({{ recent_txns|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-due" data-bs-toggle="pill" data-bs-target="#pane-due" type="button" role="tab" aria-selected="false">
+                Due Soon ({{ due_soon|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-cache" data-bs-toggle="pill" data-bs-target="#pane-cache" type="button" role="tab" aria-selected="false">
+                Q17 Cache Analytics
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent">
+        <!-- Recent Transactions Pane -->
+        <div class="tab-pane fade show active" id="pane-txns" role="tabpanel">
+            <div class="card glass">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Latest Activity</h5>
+                    <a href="{{ url_for('transactions.index') }}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr><th>Book</th><th>Member</th><th>Status</th><th class="text-end">Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for t in recent_txns %}
+                            <tr>
+                                <td class="text-truncate" style="max-width:200px">{{ t.book.title if t.book else '—' }}</td>
+                                <td>{{ t.member.name if t.member else '—' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if t.status == 'returned' else ('danger' if t.is_overdue else 'warning') }} is-dot">{{ t.status }}</span>
+                                </td>
+                                <td class="text-end"><small class="text-muted">{{ t.created_at.strftime('%b %d') if t.created_at else '' }}</small></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No recent transactions</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Due Soon Pane -->
+        <div class="tab-pane fade" id="pane-due" role="tabpanel">
+            <div class="card glass">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Returns Due in 3 Days</h5>
+                    {% if due_soon %}
+                    <span class="badge bg-warning is-dot">{{ due_soon|length }} upcoming</span>
+                    {% endif %}
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr><th>Book</th><th>Member</th><th class="text-end">Due Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for t in due_soon %}
+                            <tr>
+                                <td class="text-truncate" style="max-width:220px">{{ t.book.title if t.book else '—' }}</td>
+                                <td>{{ t.member.name if t.member else '—' }}</td>
+                                <td class="text-end"><span class="badge bg-warning is-dot">{{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}</span></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3" class="text-center text-muted py-4">No books due soon — all clear!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cache Performance Pane -->
+        <div class="tab-pane fade" id="pane-cache" role="tabpanel">
+            <div class="card glass">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0">Q17 Query Cache Metrics</h5>
+                    <span class="badge bg-primary is-dot">{{ cache_stats.hit_rate_pct }}% Hit Rate</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 text-center">
+                        <div class="col">
+                            <div class="p-3 card glass">
+                                <strong class="d-block fs-4 lg-gradient-text">{{ cache_stats.entries }}</strong>
+                                <small class="text-muted">/ {{ cache_stats.max_entries }} Slots</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 card glass">
+                                <strong class="d-block fs-4 text-success">{{ cache_stats.hits }}</strong>
+                                <small class="text-muted">Cache Hits</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 card glass">
+                                <strong class="d-block fs-4 text-danger">{{ cache_stats.misses }}</strong>
+                                <small class="text-muted">Cache Misses</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 card glass">
+                                <strong class="d-block fs-4" style="color:var(--lg-warning)">{{ cache_stats.hit_rate_pct }}%</strong>
+                                <small class="text-muted">Hit Rate</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 card glass">
+                                <strong class="d-block fs-4 text-info">{{ "%.1f"|format(db_size / 1024) }} KB</strong>
+                                <small class="text-muted">Database Size</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

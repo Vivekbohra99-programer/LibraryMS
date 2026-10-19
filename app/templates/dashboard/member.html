@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Member Portal</span>
+        <h1>Welcome{% if member %}, {{ member.name }}{% endif %}!</h1>
+        <p>Track your borrowed titles, renewal deadlines, and reading history</p>
+    </div>
+    <div>
+        <span class="badge bg-success is-dot">
+            Library Member
+        </span>
+    </div>
+</div>
+
+{% if not member %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>Profile Pending:</strong> Your member profile is not yet linked. Please contact the librarian desk to activate borrowing privileges.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% else %}
+
+<!-- Member Overview Stats -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:1">
+            <div class="top">
+                <div class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <span class="lg-delta">Active</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ active_loans|length }}">{{ active_loans|length }}</div>
+                <div class="lbl">Active Loans</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:2">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-warning)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                </div>
+                <span class="badge bg-warning is-dot">Due Soon</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ due_soon|length }}">{{ due_soon|length }}</div>
+                <div class="lbl">Due in 3 Days</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:3">
+            <div class="top">
+                <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <span class="badge bg-danger is-dot">Urgent</span>
+            </div>
+            <div>
+                <div class="val" data-count="{{ overdue|length }}">{{ overdue|length }}</div>
+                <div class="lbl">Overdue Books</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card lg-stat lg-reveal" style="--i:4">
+            <div class="top">
+                <div class="ic" style="--lg-c: {{ 'var(--lg-danger)' if fines_total > 0 else 'var(--lg-success)' }}" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <span class="lg-delta {{ 'is-down' if fines_total > 0 else '' }}">Fine Status</span>
+            </div>
+            <div>
+                <div class="val {{ 'text-danger' if fines_total > 0 else 'text-success' }}">₹{{ "%.2f"|format(fines_total) }}</div>
+                <div class="lbl">Unpaid Fines</div>
+                {% if accruing_total > 0 %}<small class="d-block text-danger fw-semibold mt-1">+ ₹{{ "%.2f"|format(accruing_total) }} accruing on overdue books</small>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Membership Capacity Card -->
+<div class="card glass mb-4">
+    <div class="card-body p-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="ic" style="width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--lg-accent-soft);color:var(--lg-accent-text)">
+                        <svg style="width:22px;height:22px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Borrowing Capacity</div>
+                        <small class="text-muted">Quota: {{ member.loan_limit }} books allowed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Used: {{ active_loans|length }} of {{ member.loan_limit }}</span>
+                    <span class="fw-semibold text-primary">{{ member.remaining_capacity }} remaining</span>
+                </div>
+                {% set usage_pct = ((active_loans|length / member.loan_limit) * 100)|round if member.loan_limit else 0 %}
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar {{ 'bg-danger' if usage_pct >= 100 else ('bg-warning' if usage_pct >= 70 else 'bg-primary') }}"
+                         role="progressbar" style="width: {{ [usage_pct, 100]|min }}%" aria-valuenow="{{ usage_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <span class="badge {{ 'bg-success' if member.status == 'active' else 'bg-danger' }} is-dot px-3 py-2">
+                    Status: {{ member.status|capitalize }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs: Active Loans / Due Soon / Overdue -->
+<div class="mb-4">
+    <ul class="nav nav-pills mb-3" id="memberTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-active" data-bs-toggle="pill" data-bs-target="#pane-active" type="button" role="tab" aria-selected="true">
+                Active Loans ({{ active_loans|length }})
+            </button>
+        </li>
+        {% if due_soon %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-due" data-bs-toggle="pill" data-bs-target="#pane-due" type="button" role="tab" aria-selected="false">
+                Due Soon ({{ due_soon|length }})
+            </button>
+        </li>
+        {% endif %}
+        {% if overdue %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-danger" id="tab-overdue" data-bs-toggle="pill" data-bs-target="#pane-overdue" type="button" role="tab" aria-selected="false">
+                Overdue ({{ overdue|length }})
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="tab-content" id="memberTabsContent">
+        <!-- Active Loans Pane -->
+        <div class="tab-pane fade show active" id="pane-active" role="tabpanel">
+            <div class="card glass">
+                {% if active_loans %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Borrowed On</th>
+                                <th>Return Due</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in active_loans %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2 text-primary">
+                                            <svg style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ t.book.title if t.book else '—' }}</div>
+                                            <small class="text-muted">{{ t.book.author.name if t.book and t.book.author else '' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ t.issue_date.strftime('%b %d, %Y') if t.issue_date else '' }}</small>
+                                </td>
+                                <td>
+                                    <span class="{{ 'text-danger fw-bold' if t.is_overdue else '' }}">
+                                        {{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if t.is_overdue %}
+                                    <span class="badge bg-danger is-dot">Overdue ({{ t.overdue_days }}d)</span>
+                                    {% else %}
+                                    <span class="badge bg-success is-dot">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if not t.is_overdue %}
+                                    <form method="POST" action="{{ url_for('transactions.renew', txn_id=t.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="return confirm('Renew this book loan for {{ loan_days }} days?')">
+                                            Renew
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted small">Return at Desk</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body lg-empty">
+                    <div class="ic" aria-hidden="true">
+                        <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <h5>No Active Loans</h5>
+                    <p class="text-muted mb-3">You have no books checked out right now.</p>
+                    <a href="{{ url_for('books.catalogue') }}" class="btn btn-primary btn-sm">Browse Catalogue</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Due Soon Pane -->
+        {% if due_soon %}
+        <div class="tab-pane fade" id="pane-due" role="tabpanel">
+            <div class="card glass">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr><th>Book</th><th>Author</th><th>Due Date</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for t in due_soon %}
+                            <tr>
+                                <td class="fw-semibold">{{ t.book.title if t.book else '—' }}</td>
+                                <td><small class="text-muted">{{ t.book.author.name if t.book and t.book.author else '' }}</small></td>
+                                <td><span class="badge bg-warning is-dot">{{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}</span></td>
+                                <td>
+                                    {% if not t.is_overdue %}
+                                    <form method="POST" action="{{ url_for('transactions.renew', txn_id=t.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button class="btn btn-sm btn-warning" onclick="return confirm('Renew for {{ loan_days }} days?')">
+                                            Renew Now
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Overdue Pane -->
+        {% if overdue %}
+        <div class="tab-pane fade" id="pane-overdue" role="tabpanel">
+            <div class="card glass">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-stack">
+                        <thead>
+                            <tr><th>Book</th><th>Due Date</th><th>Days Overdue</th><th>Est. Fine</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for t in overdue %}
+                            <tr>
+                                <td class="fw-semibold">{{ t.book.title if t.book else '—' }}</td>
+                                <td><span class="text-danger fw-semibold">{{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}</span></td>
+                                <td><span class="badge bg-danger is-dot">{{ t.overdue_days }}d late</span></td>
+                                <td><strong class="text-danger">₹{{ "%.2f"|format(t.accrued_fine(fine_rate)) }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Navigation Actions -->
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('books.catalogue') }}" class="btn btn-primary btn-sm">Browse Catalogue</a>
+    <a href="{{ url_for('transactions.index') }}" class="btn btn-outline-secondary btn-sm">Borrowing History</a>
+    <a href="{{ url_for('fines.index') }}" class="btn btn-outline-secondary btn-sm">My Fines</a>
+    <a href="{{ url_for('admin.notifications') }}" class="btn btn-outline-secondary btn-sm">Notifications</a>
+</div>
+
+{% endif %}
+{% endblock %}
