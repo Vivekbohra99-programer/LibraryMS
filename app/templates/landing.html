@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}LibraryMS · Library Management System{% endblock %}
+{% block meta_description %}Library Management System – Q17: Reduce Memory Usage (compressed storage, lazy loading, bounded query cache){% endblock %}
+{% block public_content %}
+<main class="container-xl" id="top">
+
+  <!-- HERO -->
+  <section class="lg-hero">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="lg-chip lg-reveal"><svg class="i"><use href="#i-cpu"/></svg> Q17 · Reduce Memory Usage</span>
+        <h1 class="lg-reveal" style="--i:1">Your library, <span class="lg-gradient-text">beautifully</span> organised.</h1>
+        <p class="lead lg-reveal" style="--i:2">Browse, borrow and manage every book. The catalogue stays light on memory thanks to compression, lazy loading and a bounded query cache.</p>
+        <div class="d-flex flex-wrap gap-2 mt-4 lg-reveal" style="--i:3">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('books.catalogue') }}">Browse catalogue <svg class="i"><use href="#i-arrow"/></svg></a>
+          {% if current_user.is_authenticated %}
+          <a class="btn btn-lg" href="{{ url_for('dashboard.index') }}">Go to Dashboard</a>
+          {% else %}
+          <a class="btn btn-lg" href="{{ url_for('auth.login') }}">Sign in</a>
+          {% endif %}
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-4 lg-reveal" style="--i:4">
+          <span class="lg-chip">{{ stats.total_books }} titles</span>
+          <span class="lg-chip">{{ stats.total_members }} members</span>
+          <span class="lg-chip">4 Q17 features</span>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="lg-stage lg-tilt lg-reveal" style="--i:2">
+          <div class="lg-arc"></div>
+          <div class="lg-orbit"></div><div class="lg-orbit o2"></div>
+          <div class="lg-bookstack">
+            <div class="lg-cover" style="--c1:#881337;--c2:#f43f5e"><span class="k">Design</span><span class="t">Design Patterns</span></div>
+            <div class="lg-cover" style="--c1:#1e3a8a;--c2:#3b82f6"><span class="k">Engineering</span><span class="t">Clean Code</span></div>
+            <div class="lg-cover" style="--c1:#115e59;--c2:#14b8a6"><span class="k">Craft</span><span class="t">The Pragmatic Programmer</span></div>
+          </div>
+          <div class="glass lg-glass-tag lg-float lg-lens" style="--d:0;left:-2%;top:18%" data-lens-strength="12">
+            <span class="ic"><svg class="i"><use href="#i-clock"/></svg></span><span>Lazy loading<small>Covers decompress on demand</small></span>
+          </div>
+          <div class="glass lg-glass-tag lg-float lg-lens" style="--d:3;right:-2%;bottom:16%" data-lens-strength="12">
+            <span class="ic"><svg class="i"><use href="#i-check"/></svg></span><span>Compressed storage<small>zlib text + Pillow images</small></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="row g-3 g-lg-4 lg-section" style="margin-top:0">
+    <div class="col-6 col-lg-3 lg-reveal">
+      <div class="card lg-stat">
+        <div class="top"><span class="ic"><svg class="i"><use href="#i-layers"/></svg></span><span class="lg-delta">live</span></div>
+        <div><div class="val" data-count="{{ stats.total_books }}">{{ stats.total_books }}</div><div class="lbl">Books in catalogue</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 lg-reveal" style="--i:1">
+      <div class="card lg-stat" style="--lg-c:var(--lg-t-info)">
+        <div class="top"><span class="ic"><svg class="i"><use href="#i-users"/></svg></span><span class="lg-delta">live</span></div>
+        <div><div class="val" data-count="{{ stats.total_members }}">{{ stats.total_members }}</div><div class="lbl">Active members</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 lg-reveal" style="--i:2">
+      <div class="card lg-stat" style="--lg-c:var(--lg-t-success)">
+        <div class="top"><span class="ic"><svg class="i"><use href="#i-layers"/></svg></span><span class="lg-delta">zlib + PIL</span></div>
+        <div><div class="val">{{ comp.saved_pct }}%</div><div class="lbl">Storage saved by compression</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 lg-reveal" style="--i:3">
+      <div class="card lg-stat" style="--lg-c:var(--lg-t-warning)">
+        <div class="top"><span class="ic"><svg class="i"><use href="#i-db"/></svg></span><span class="lg-delta">cache</span></div>
+        <div><div class="val">LRU</div><div class="lbl">Query caching</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATALOGUE -->
+  <section id="catalogue" class="lg-section">
+    <div class="lg-page-header lg-reveal">
+      <div><span class="lg-eyebrow">Catalogue</span><h1>Find your next read</h1><p>Covers are decompressed on demand, so this grid stays cheap.</p></div>
+      <a href="{{ url_for('books.catalogue') }}" class="btn btn-outline-primary">View Full Catalogue <svg class="i"><use href="#i-arrow"/></svg></a>
+    </div>
+    <form action="{{ url_for('books.catalogue') }}" method="get" class="row g-3 mb-4 lg-reveal">
+      <div class="col-md-10">
+        <div class="input-icon">
+          <svg class="i"><use href="#i-search"/></svg>
+          <input class="form-control form-control-lg" type="search" name="q" placeholder="Search title, author or ISBN (Press /)" aria-label="Search" data-lg-search>
+          <span class="lg-kbd">/</span>
+        </div>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-primary btn-lg" type="submit">Search</button>
+      </div>
+    </form>
+    <div class="row g-3 g-lg-4" id="grid">
+      {% for book in featured %}
+      <div class="col-6 col-md-4 col-xl-3 lg-reveal" style="--i:{{ loop.index0 % 4 }}">
+        <a href="{{ url_for('books.detail', book_id=book.id) }}" class="card lg-book">
+          <div class="lg-cover">
+            {% if book.has_cover %}
+            <img src="{{ book.cover_url }}" width="400" height="600" loading="lazy" decoding="async" alt="{{ book.title }}">
+            {% else %}
+            <span class="k">{{ book.category.name if book.category else 'General' }}</span>
+            <span class="t">{{ book.title }}</span>
+            {% endif %}
+          </div>
+          <div><h3>{{ book.title }}</h3><div class="by">by {{ book.author.name if book.author else 'Unknown' }}</div></div>
+          <div class="meta">
+            {% if book.is_available %}
+            <span class="badge bg-success is-dot">{{ book.available_quantity }} available</span>
+            {% else %}
+            <span class="badge bg-danger is-dot">All out</span>
+            {% endif %}
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Q17 ARCHITECTURE HIGHLIGHTS -->
+  <section id="q17" class="lg-section">
+    <div class="lg-page-header lg-reveal">
+      <div><span class="lg-eyebrow">Architecture · Q17</span><h1>Engineered for low memory</h1><p>Comprehensive system optimizations keep peak server and client memory minimal.</p></div>
+      <span class="badge bg-info is-dot">Live from this database</span>
+    </div>
+    <div class="row g-3 g-lg-4">
+      <div class="col-lg-6 lg-reveal">
+        <div class="card h-100">
+          <div class="card-header">Eager vs Lazy Loading</div>
+          <div class="card-body d-grid gap-4">
+            <div>
+              <p class="mb-2"><strong>Lazy (what this app does):</strong> book lists never decompress anything. Descriptions and covers stay compressed in memory until one book is opened.</p>
+              <p class="mb-0 text-muted">Eager loading would decompress every description and cover up front. The exact memory difference is measured on demand by the benchmark on the Performance page, so no numbers are claimed here.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{{ url_for('admin.performance') if current_user.is_staff else url_for('books.catalogue') }}" class="btn btn-primary">
+                {{ 'Open Performance Monitor' if current_user.is_staff else 'Browse Optimised Catalogue' }}
+              </a>
+              {% if current_user.is_staff %}
+              <a href="{{ url_for('admin.maintenance') }}" class="btn">Maintenance Tools</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 lg-reveal" style="--i:1">
+        <div class="card h-100">
+          <div class="card-header">Asset Compression</div>
+          <div class="card-body d-grid gap-3 justify-content-center text-center align-content-center">
+            <div class="lg-ring-wrap mx-auto" style="width:132px">
+              <div class="lg-ring" data-value="{{ comp.saved_pct }}" style="--lg-c:var(--lg-success)"></div>
+              <div class="lg-ring-label"><span>{{ comp.saved_pct }}%<small>saved</small></span></div>
+            </div>
+            <div class="small text-muted">{{ "%.0f"|format(comp.raw_bytes / 1024) }} KB raw &rarr; {{ "%.0f"|format(comp.compressed_bytes / 1024) }} KB stored<br>descriptions + covers, all books</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 lg-reveal" style="--i:2">
+        <div class="card h-100">
+          <div class="card-header">Bounded LRU Cache</div>
+          <div class="card-body d-grid gap-3 justify-content-center text-center align-content-center">
+            <div class="lg-ring-wrap mx-auto" style="width:132px">
+              <div class="lg-ring" data-value="{{ cache.hit_rate_pct }}" style="--lg-c:var(--lg-info)"></div>
+              <div class="lg-ring-label"><span>{{ cache.hit_rate_pct }}%<small>hit rate</small></span></div>
+            </div>
+            <div class="small text-muted">{{ cache.hits }} hits &middot; {{ cache.misses }} misses<br>max {{ cache.max_entries }} entries &middot; TTL {{ cache.ttl }} s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPEARANCE & THEME SETTINGS (from demo.html) -->
+  <section id="appearance" class="lg-section">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 lg-reveal">
+        <div class="card">
+          <div class="card-header">Theme &amp; Accent Preferences</div>
+          <div class="card-body d-grid gap-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fw-semibold">Dark mode</span>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" data-lg-theme-toggle aria-label="Dark mode">
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fw-semibold">Full effects <span class="text-muted fw-normal small">(blur, light, motion)</span></span>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" data-lg-fx-toggle aria-label="Full effects">
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fw-semibold">Skeuomorphic style <span class="text-muted fw-normal small">(metal, LCDs, keys)</span></span>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" data-lg-skin-toggle aria-label="Skeuomorphic style">
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between lg-accent-row">
+              <span class="fw-semibold">Accent</span>
+              <div class="d-flex gap-2">
+                <button class="swatch" style="--s:hsl(211 100% 50%)" data-lg-accent="blue" aria-label="Blue" aria-pressed="true"></button>
+                <button class="swatch" style="--s:hsl(245 100% 58%)" data-lg-accent="indigo" aria-label="Indigo" aria-pressed="false"></button>
+                <button class="swatch" style="--s:hsl(268 100% 58%)" data-lg-accent="violet" aria-label="Violet" aria-pressed="false"></button>
+                <button class="swatch" style="--s:hsl(340 100% 46%)" data-lg-accent="rose" aria-label="Rose" aria-pressed="false"></button>
+                <button class="swatch" style="--s:hsl(152 100% 26%)" data-lg-accent="emerald" aria-label="Emerald" aria-pressed="false"></button>
+                <button class="swatch" style="--s:hsl(26 100% 52%)" data-lg-accent="orange" aria-label="Orange" aria-pressed="false"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="lg-footer text-center">
+    LibraryMS · Q17 Reduce Memory Usage
+  </footer>
+</main>
+{% endblock %}
