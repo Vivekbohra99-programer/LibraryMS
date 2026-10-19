@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}500 Server Error – LibraryMS{% endblock %}
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+        <div class="card glass lg-empty">
+            <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h2>500 – Server Error</h2>
+            <p class="text-muted mb-4">An unexpected error occurred while processing the request.</p>
+            <div><a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Return to Dashboard</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block public_content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+        <div class="card glass lg-empty">
+            <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h2>500 – Server Error</h2>
+            <p class="text-muted mb-4">An unexpected error occurred while processing the request.</p>
+            <div><a href="{{ url_for('landing') }}" class="btn btn-primary">Return to Home</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

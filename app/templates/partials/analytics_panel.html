@@ -1,0 +1,101 @@
+{#- Dashboard analytics. Needs `an` from app.services.analytics.dashboard_analytics().
+    Pure HTML/CSS bars: no chart library, no canvas, nothing extra held in browser memory. -#}
+{% set od = an.overdue %}
+{% set fn = an.fines %}
+{% set fine_total = fn.paid + fn.unpaid %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Loans issued, last {{ an.loans|length }} days</h5>
+                <span class="badge bg-primary is-dot">{{ an.loans_total }} total</span>
+            </div>
+            <div class="card-body p-4">
+                {% if an.loans_total %}
+                <div class="lg-bars" role="img" aria-label="{{ an.loans_summary }}">
+                    {% for d in an.loans %}
+                    <div class="lg-bar{{ ' is-zero' if not d.value }}" title="{{ d.full }}: {{ d.value }} loan{{ '' if d.value == 1 else 's' }}">
+                        <div class="col"><b>{{ d.value if d.value else '' }}</b><i style="--k: {{ '%.3f'|format(d.value / an.loans_peak) }}"></i></div>
+                        <span>{{ d.label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="lg-empty py-4 text-center">
+                    <h6>No loans issued in the last {{ an.loans|length }} days</h6>
+                    <p class="small text-muted mb-0">Issued books will show up here day by day.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Books by category</h5>
+                <span class="badge bg-secondary">{{ an.category_titles }} titles</span>
+            </div>
+            <div class="card-body p-4">
+                {% if an.categories %}
+                <div class="lg-hbars" role="list">
+                    {% for c in an.categories %}
+                    <div class="lg-hbar" role="listitem">
+                        <span class="n" title="{{ c.name }}">{{ c.name }}</span>
+                        <span class="t"><i style="--w: {{ '%.1f'|format(c.value / an.category_max * 100) }}%"></i></span>
+                        <b>{{ c.value }}</b>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="lg-empty py-4 text-center"><h6>No categorised books yet</h6></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Fines collected vs outstanding</h5>
+                <a href="{{ url_for('fines.index') }}" class="btn btn-outline-secondary btn-sm">View fines</a>
+            </div>
+            <div class="card-body p-4">
+                {% if fine_total > 0 %}
+                <div class="lg-split" role="img" aria-label="Paid ₹{{ '%.2f'|format(fn.paid) }}, unpaid ₹{{ '%.2f'|format(fn.unpaid) }}">
+                    <i class="a" style="flex: {{ fn.paid }}"></i><i class="b" style="flex: {{ fn.unpaid }}"></i>
+                </div>
+                <div class="lg-legend">
+                    <span><i style="background: var(--lg-success)"></i>Paid <b>₹{{ "%.2f"|format(fn.paid) }}</b></span>
+                    <span><i style="background: var(--lg-danger)"></i>Unpaid <b>₹{{ "%.2f"|format(fn.unpaid) }}</b></span>
+                </div>
+                {% else %}
+                <div class="lg-empty py-4 text-center">
+                    <h6>No fines recorded yet</h6>
+                    <p class="small text-muted mb-0">A fine appears when an overdue book is returned.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card glass h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Overdue right now</h5>
+                <a href="{{ url_for('transactions.index', status='overdue') }}" class="btn btn-outline-secondary btn-sm">View loans</a>
+            </div>
+            <div class="card-body p-4">
+                {% if od.count %}
+                <div class="row text-center g-3">
+                    <div class="col-4"><div class="lg-figure text-danger">{{ od.count }}</div><div class="small text-muted">loan{{ '' if od.count == 1 else 's' }} out</div></div>
+                    <div class="col-4"><div class="lg-figure">{{ od.days }}</div><div class="small text-muted">days late, total</div></div>
+                    <div class="col-4"><div class="lg-figure text-danger">₹{{ "%.2f"|format(od.accruing) }}</div><div class="small text-muted">accrued so far</div></div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">Counted at ₹{{ "%.2f"|format(od.rate) }} per day. It becomes a fine record when each book is returned.</p>
+                {% else %}
+                <div class="lg-empty py-4 text-center"><h6>No overdue loans</h6><p class="small text-muted mb-0">Every issued book is within its due date.</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

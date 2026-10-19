@@ -1,0 +1,160 @@
+/* ==========================================================================
+   Library Management System – Layout Integration
+   Provides authenticated sidebar shell layout using Liquid Glass tokens.
+   ========================================================================== */
+
+:root {
+  --sidebar-width: 268px;
+  --topbar-height: 64px;
+}
+
+/* App Shell Layout */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.app-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--lg-surface);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  border-right: 1px solid var(--lg-border);
+  box-shadow: var(--lg-shadow);
+}
+
+[data-theme="dark"] .app-sidebar {
+  background: linear-gradient(180deg, rgba(12, 16, 32, 0.92) 0%, rgba(8, 11, 24, 0.96) 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .app-sidebar {
+  background: linear-gradient(180deg, rgba(248, 250, 255, 0.88) 0%, rgba(238, 243, 252, 0.92) 100%);
+  border-right: 1px solid rgba(11, 19, 36, 0.1);
+}
+
+.sidebar-header {
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--lg-line);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--lg-text);
+  text-decoration: none;
+}
+.sidebar-brand:hover {
+  color: var(--lg-text);
+}
+
+.sidebar-nav {
+  padding: 1rem 0.8rem;
+  flex: 1;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--lg-r-sm);
+  color: var(--lg-text-2);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s var(--lg-spring);
+  margin-bottom: 2px;
+}
+
+.sidebar-nav .nav-link:hover {
+  background: var(--lg-fill-hi);
+  color: var(--lg-text);
+  transform: translateX(2px);
+}
+
+.sidebar-nav .nav-link.active {
+  background: var(--lg-accent-soft);
+  color: var(--lg-accent-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 8px var(--lg-accent-ring);
+  border-left: 3px solid var(--lg-accent);
+}
+
+.nav-section {
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 1.2rem 1rem 0.4rem;
+  color: var(--lg-text-3);
+  list-style: none;
+}
+
+.app-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.app-topbar {
+  height: var(--topbar-height);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--lg-surface);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  border-bottom: 1px solid var(--lg-border);
+  box-shadow: var(--lg-shadow-sm);
+}
+
+.app-content {
+  padding: 1.5rem 2rem 3rem;
+  flex: 1;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 991.98px) {
+  .app-main {
+    margin-left: 0 !important;
+  }
+  .app-sidebar {
+    transform: translateX(-100%);
+    box-shadow: var(--lg-shadow);
+  }
+  .app-sidebar.show {
+    transform: translateX(0);
+  }
+  .app-content {
+    padding: 1rem;
+  }
+  .app-topbar {
+    padding: 0 1rem;
+  }
+}

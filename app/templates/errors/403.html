@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}403 Forbidden – LibraryMS{% endblock %}
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+        <div class="card glass lg-empty">
+            <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h2>403 – Access Denied</h2>
+            <p class="text-muted mb-4">You do not have administrative privileges to access this page.</p>
+            <div><a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Go to Dashboard</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block public_content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+        <div class="card glass lg-empty">
+            <div class="ic" style="--lg-c: var(--lg-danger)" aria-hidden="true">
+                <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h2>403 – Access Denied</h2>
+            <p class="text-muted mb-4">You do not have administrative privileges to access this resource.</p>
+            <div><a href="{{ url_for('auth.login') }}" class="btn btn-primary">Sign In</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

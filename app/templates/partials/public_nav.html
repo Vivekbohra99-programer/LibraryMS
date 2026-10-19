@@ -1,0 +1,58 @@
+<!-- NAVBAR (floating glass pill; lg-lens = optional Chromium edge refraction) -->
+<nav class="navbar navbar-expand-lg sticky-top lg-navbar-float lg-lens" data-lens-strength="14">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand" href="{{ url_for('landing') }}"><span class="lg-logo"><svg class="i"><use href="#i-book"/></svg></span>LibraryMS</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-lg-3 me-lg-auto gap-lg-1">
+        <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'landing' }}" aria-current="page" href="{{ url_for('landing') }}">Home</a></li>
+        <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'books.catalogue' }}" href="{{ url_for('books.catalogue') }}">Catalogue</a></li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+        {% if current_user.is_staff %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+          <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Management</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('books.index') }}">Books Inventory</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('members.index') }}">Members Directory</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('transactions.index') }}">Transactions</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Q17 tools</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.performance') }}">Performance monitor</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.maintenance') }}">Database maintenance</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.backups') }}">Backup &amp; restore</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.settings') }}">System settings</a></li>
+          </ul>
+        </li>
+        {% endif %}
+        {% endif %}
+      </ul>
+      <div class="d-flex align-items-center gap-2 pt-3 pt-lg-0">
+        <button class="lg-icon-btn" type="button" data-lg-fx-toggle aria-pressed="true" title="Effects"><svg class="i"><use href="#i-zap"/></svg></button>
+        <button class="lg-icon-btn" type="button" data-lg-theme-toggle aria-label="Toggle theme"><svg class="i ic-sun"><use href="#i-sun"/></svg><svg class="i ic-moon"><use href="#i-moon"/></svg></button>
+        <button class="lg-icon-btn" type="button" data-lg-skin-toggle aria-pressed="false" aria-label="Switch to the skeuomorphic style" title="Switch to the skeuomorphic style"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></button>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('admin.notifications') if current_user.is_staff else '#' }}" class="lg-icon-btn position-relative text-decoration-none" aria-label="Notifications" title="Notifications">
+          <svg class="i"><use href="#i-bell"/></svg>
+          {% if unread_count and unread_count > 0 %}<span class="lg-dot"></span>{% endif %}
+        </a>
+        <div class="dropdown">
+          <a href="#" class="lg-avatar text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account">{{ current_user.username[:2].upper() }}</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">{{ current_user.username }}</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}">My loans</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('members.profile') }}">Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">Sign out</a></li>
+          </ul>
+        </div>
+        {% else %}
+        <a class="btn btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

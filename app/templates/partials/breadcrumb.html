@@ -1,0 +1,8 @@
+{% if request.endpoint and request.endpoint != 'dashboard.index' %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Home</a></li>
+        {% block breadcrumb %}{% endblock %}
+    </ol>
+</nav>
+{% endif %}

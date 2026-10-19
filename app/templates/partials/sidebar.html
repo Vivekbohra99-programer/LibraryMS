@@ -1,0 +1,150 @@
+<!-- Sidebar navigation -->
+<aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-header">
+        <a href="{{ url_for('dashboard.index') }}" class="sidebar-brand d-flex align-items-center gap-2">
+            <span class="lg-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+            </span>
+            <span>Library<span class="lg-gradient-text">MS</span></span>
+        </a>
+        <button class="btn btn-link sidebar-toggle d-lg-none" id="sidebarClose">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    <nav class="sidebar-nav">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
+                    <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                </a>
+            </li>
+
+            {% if current_user.is_staff %}
+            <li class="nav-section">Management</li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('books.') }}" href="{{ url_for('books.index') }}">
+                    <i class="bi bi-journal-bookmark"></i><span>Books</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('authors.') }}" href="{{ url_for('authors.index') }}">
+                    <i class="bi bi-people"></i><span>Authors</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('categories.') }}" href="{{ url_for('categories.index') }}">
+                    <i class="bi bi-tags"></i><span>Categories</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('members.') and request.endpoint != 'members.profile' }}" href="{{ url_for('members.index') }}">
+                    <i class="bi bi-person-badge"></i><span>Members</span>
+                </a>
+            </li>
+
+            <li class="nav-section">Circulation</li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('transactions.') }}" href="{{ url_for('transactions.index') }}">
+                    <i class="bi bi-arrow-left-right"></i><span>Transactions</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('fines.') }}" href="{{ url_for('fines.index') }}">
+                    <i class="bi bi-cash-coin"></i><span>Fines</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('reports.') }}" href="{{ url_for('reports.index') }}">
+                    <i class="bi bi-bar-chart-line"></i><span>Reports</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.is_member_role %}
+            <li class="nav-section">Library</li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'books.catalogue' }}" href="{{ url_for('books.catalogue') }}">
+                    <i class="bi bi-grid"></i><span>Catalogue</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('transactions.') }}" href="{{ url_for('transactions.index') }}">
+                    <i class="bi bi-bookmark"></i><span>My Books</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('fines.') }}" href="{{ url_for('fines.index') }}">
+                    <i class="bi bi-cash-coin"></i><span>Fines</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.is_admin %}
+            <li class="nav-section">Administration</li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.performance' }}" href="{{ url_for('admin.performance') }}">
+                    <i class="bi bi-cpu"></i><span>Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.maintenance' }}" href="{{ url_for('admin.maintenance') }}">
+                    <i class="bi bi-wrench-adjustable"></i><span>Maintenance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.backups' }}" href="{{ url_for('admin.backups') }}">
+                    <i class="bi bi-cloud-download"></i><span>Backup & Restore</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.activity_logs' }}" href="{{ url_for('admin.activity_logs') }}">
+                    <i class="bi bi-clock-history"></i><span>Activity Logs</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.staff' }}" href="{{ url_for('admin.staff') }}">
+                    <i class="bi bi-person-gear"></i><span>Staff Accounts</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.settings' }}" href="{{ url_for('admin.settings') }}">
+                    <i class="bi bi-gear"></i><span>Settings</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="nav-section">Account</li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.notifications' }}" href="{{ url_for('admin.notifications') }}">
+                    <i class="bi bi-bell"></i><span>Notifications</span>
+                    {% if unread_count %}<span class="badge bg-danger ms-auto">{{ unread_count }}</span>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'members.profile' }}" href="{{ url_for('members.profile') }}">
+                    <i class="bi bi-person-circle"></i><span>Profile</span>
+                </a>
+            </li>
+            <li class="nav-item" style="margin-top:8px">
+                <a class="nav-link" href="{{ url_for('auth.logout') }}" style="color:rgba(239,68,68,0.7)">
+                    <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- Sidebar footer -->
+    <div style="padding:16px 22px;border-top:1px solid var(--lg-line);margin-top:auto">
+        <div class="d-flex align-items-center" style="gap:10px">
+            <div class="lg-avatar" style="width:34px;height:34px;font-size:0.8rem">
+                {{ current_user.username[0]|upper }}
+            </div>
+            <div>
+                <div style="color:var(--lg-text);font-size:0.8rem;font-weight:600">{{ current_user.username }}</div>
+                <div style="color:var(--lg-text-3);font-size:0.68rem;text-transform:capitalize">{{ current_user.role }}</div>
+            </div>
+        </div>
+    </div>
+</aside>
