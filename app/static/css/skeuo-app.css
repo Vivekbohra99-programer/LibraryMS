@@ -1,0 +1,515 @@
+/* ==========================================================================
+   skeuo-app.css: the skeuomorphic look for the whole app (the Glass / Skeuo switch in the top bar)
+
+   Every rule below is scoped to html[data-skin="skeuo"], so with the default glass look on, this file
+   changes nothing (tests/test_skin.py checks that). Materials and palette come from the Performance
+   console: brushed aluminium faces, engraved labels, recessed wells, LCD readouts, domed keys, LEDs.
+
+   Two rules of thumb keep it readable:
+     - text never sits on a dark metal gradient; long text and tables sit on light "paper" plates
+     - the dark theme is a second set of the same tokens, not a different design
+   Sections: 0 tokens · 1 base · 2 panels · 3 type · 4 shell (sidebar, top bar, navbar) · 5 buttons ·
+             6 cards + stat LCDs · 7 forms · 8 tables · 9 badges, alerts, pagination, tabs, progress ·
+             10 overlays · 11 components (hero dial, covers, charts) · 12 print
+   ========================================================================== */
+
+/* 0 ─ TOKENS ─────────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] {
+  color-scheme: light;
+
+  --sk-desk: #a2a5a8;
+  --sk-face: #c4c6c7; --sk-face-hi: #dcdedf; --sk-face-lo: #aaadaf;
+  --sk-well-hi: #b4b7b9; --sk-well-lo: #8d9093;
+  --sk-paper: #e7e9ea;            /* tables and long text */
+  --sk-field: #eff1f2;            /* text inputs */
+  --sk-plate: #d9dbdc;            /* label plates: badges, chips, alerts */
+  --sk-ink: #1f2226; --sk-ink-2: #2a2e32; --sk-ink-3: #33383c;   /* darker than a typical UI: mid-grey metal needs it to reach 4.5:1 */
+  --sk-hi: rgba(255,255,255,.72); --sk-lo: rgba(0,0,0,.30);
+  --sk-engrave: 0 1px 0 rgba(255,255,255,.7);
+  --sk-led: #14e0bb; --sk-led-glow: rgba(20,224,187,.7); --sk-led-ink: #06493f;
+  --sk-rec: #c42a2a; --sk-rec-hi: #d23838; --sk-rec-lo: #9b1b1b;
+  --sk-lcd-bg: #0d1719; --sk-lcd-ink: #72f7da; --sk-lcd-dim: rgba(114,247,218,.7);
+  --sk-key: linear-gradient(180deg, #f4f5f6, #d2d5d7 58%, #babdc0);
+  --sk-key-sh: inset 0 2px 1px rgba(255,255,255,.8), inset 0 -3px 4px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.30), 0 4px 6px rgba(0,0,0,.30);
+  --sk-key-down: inset 0 3px 7px rgba(0,0,0,.4), inset 0 -1px 0 rgba(255,255,255,.35), 0 0 0 1px rgba(0,0,0,.30), 0 1px 1px rgba(0,0,0,.3);
+  --sk-well: inset 0 3px 7px rgba(0,0,0,.30), 0 1px 0 var(--sk-hi);
+  --sk-shadow: rgba(16,20,24,.32);
+  --sk-lens: #053f37;
+  --sk-font: "Nunito", "SF Pro Rounded", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --sk-font-lcd: "Share Tech Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  --sk-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --sk-brush: repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px);
+
+  /* the kit's own tokens, mapped, so every component that reads them follows */
+  --lg-font: var(--sk-font);
+  --lg-text: var(--sk-ink); --lg-text-2: var(--sk-ink-2); --lg-text-3: var(--sk-ink-3);
+  --lg-accent: #14c9a9; --lg-accent-fg: #052f28;
+  --lg-accent-hi: #5ff0d4; --lg-accent-lo: #0a8a74;
+  --lg-accent-text: #06493f; --lg-accent-soft: rgba(20,224,187,.20); --lg-accent-ring: rgba(20,224,187,.45);
+  --lg-success: #1fbf62; --lg-danger: #d93232; --lg-warning: #f0a020; --lg-info: #2f8fe8; --lg-slate: #7b8186;
+  --lg-t-success: #085226; --lg-t-danger: #8c1616; --lg-t-warning: #6a3c00; --lg-t-info: #084a7c;
+  --lg-surface: linear-gradient(180deg, color-mix(in srgb, var(--sk-face-hi) 62%, var(--sk-face)), var(--sk-face));
+  --lg-surface-hi: linear-gradient(180deg, var(--sk-face-hi), color-mix(in srgb, var(--sk-face-hi) 40%, var(--sk-face)));
+  --lg-surface-solid: var(--lg-surface);
+  --lg-fill: color-mix(in srgb, var(--sk-face-lo) 55%, var(--sk-face));
+  --lg-fill-hi: var(--sk-face-hi);
+  --lg-fill-lo: color-mix(in srgb, var(--sk-face-lo) 35%, transparent);
+  --lg-line: rgba(0,0,0,.16); --lg-line-strong: rgba(0,0,0,.28);
+  --lg-track: #9a9ea1;
+  --lg-edge: transparent; --lg-edge-lo: transparent; --lg-border: transparent;
+  --lg-inset: inset 0 1px 0 var(--sk-hi), inset 0 -1px 0 rgba(0,0,0,.14);
+  --lg-shadow: 0 1px 0 rgba(255,255,255,.35), 0 8px 14px -8px var(--sk-shadow), 0 2px 4px rgba(0,0,0,.2);
+  --lg-shadow-sm: 0 4px 8px -2px rgba(0,0,0,.34), 0 1px 2px rgba(0,0,0,.28);
+  --lg-row-hover: rgba(20,224,187,.16); --lg-row-alt: rgba(0,0,0,.04);
+  --lg-bg-base: var(--sk-desk);
+  --lg-r-xs: 6px; --lg-r-sm: 9px; --lg-r-md: 13px; --lg-r-lg: 18px; --lg-r-xl: 24px;
+  --lg-blur: 0px; --lg-sat: 100%;
+}
+html[data-skin="skeuo"][data-theme="dark"] {
+  color-scheme: dark;
+
+  --sk-desk: #111315;
+  --sk-face: #3b3e42; --sk-face-hi: #4a4e53; --sk-face-lo: #2e3135;
+  --sk-well-hi: #2b2e31; --sk-well-lo: #1c1e20;
+  --sk-paper: #25282b; --sk-field: #16181a; --sk-plate: #1f2225;
+  --sk-ink: #e8ebed; --sk-ink-2: #cfd4d8; --sk-ink-3: #bcc2c7;
+  --sk-hi: rgba(255,255,255,.13); --sk-lo: rgba(0,0,0,.55);
+  --sk-engrave: 0 -1px 0 rgba(0,0,0,.65);
+  --sk-led-ink: #5df0d2;
+  --sk-key: linear-gradient(180deg, #565b61, #42464b 58%, #35383c);
+  --sk-key-sh: inset 0 2px 1px rgba(255,255,255,.2), inset 0 -3px 4px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.6), 0 4px 6px rgba(0,0,0,.5);
+  --sk-key-down: inset 0 3px 7px rgba(0,0,0,.6), inset 0 -1px 0 rgba(255,255,255,.12), 0 0 0 1px rgba(0,0,0,.6), 0 1px 1px rgba(0,0,0,.5);
+  --sk-well: inset 0 3px 7px rgba(0,0,0,.6), 0 1px 0 var(--sk-hi);
+  --sk-shadow: rgba(0,0,0,.65);
+  --sk-lens: #5df0d2;
+
+  --lg-accent-text: #5df0d2; --lg-accent-soft: rgba(20,224,187,.22);
+  --lg-t-success: #66e698; --lg-t-danger: #ffb1aa; --lg-t-warning: #ffc65c; --lg-t-info: #7dd4fa;
+  --lg-surface: linear-gradient(180deg, color-mix(in srgb, var(--sk-face-hi) 55%, var(--sk-face)), var(--sk-face));
+  --lg-surface-hi: linear-gradient(180deg, var(--sk-face-hi), color-mix(in srgb, var(--sk-face-hi) 30%, var(--sk-face)));
+  --lg-fill: color-mix(in srgb, var(--sk-face-lo) 70%, var(--sk-face));
+  --lg-fill-lo: color-mix(in srgb, var(--sk-face-lo) 40%, transparent);
+  --lg-line: rgba(0,0,0,.45); --lg-line-strong: rgba(0,0,0,.65);
+  --lg-track: #1f2225;
+  --lg-inset: inset 0 1px 0 var(--sk-hi), inset 0 -1px 0 rgba(0,0,0,.4);
+  --lg-shadow: 0 1px 0 rgba(255,255,255,.06), 0 10px 20px -8px var(--sk-shadow), 0 3px 6px rgba(0,0,0,.4);
+  --lg-shadow-sm: 0 4px 8px -2px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.5);
+  --lg-row-hover: rgba(20,224,187,.13); --lg-row-alt: rgba(255,255,255,.03);
+}
+
+/* 1 ─ BASE ───────────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] { background: var(--sk-desk); }
+html[data-skin="skeuo"] body { font-family: var(--sk-font); font-feature-settings: normal; }
+/* the glass skin's colour mesh and drifting light become a plain graphite desk */
+html[data-skin="skeuo"] body::before {
+  background: var(--sk-grain),
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--sk-desk) 82%, #fff) 0%, var(--sk-desk) 55%, color-mix(in srgb, var(--sk-desk) 91%, #000) 100%);
+}
+html[data-skin="skeuo"] body::after { display: none; animation: none; }
+html[data-skin="skeuo"] a { color: var(--lg-accent-text); text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+html[data-skin="skeuo"] :is(.breadcrumb, .lg-page-header p, .lg-hero .lead) a { color: var(--sk-ink); text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--sk-led); text-underline-offset: 3px; }
+html[data-skin="skeuo"] a:hover { color: var(--sk-ink); }
+html[data-skin="skeuo"] :focus-visible { outline: 3px solid var(--lg-accent-ring); outline-offset: 2px; }
+html[data-skin="skeuo"] { scrollbar-color: var(--sk-well-lo) transparent; }
+html[data-skin="skeuo"] ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--sk-metal-hi, #cfd2d4), var(--sk-well-lo)); border: 3px solid transparent; background-clip: content-box; border-radius: 99px; }
+html[data-skin="skeuo"] hr { border-color: var(--lg-line-strong); box-shadow: 0 1px 0 var(--sk-hi); }
+
+/* 2 ─ PANELS ─────────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] :is(.glass, .card, .navbar, .modal-content, .dropdown-menu, .offcanvas, .toast, .popover) {
+  background: var(--sk-grain), var(--lg-surface);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border: 0; border-radius: var(--lg-r-lg); corner-shape: round;
+  box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -2px 0 var(--sk-lo), var(--lg-shadow);
+}
+/* no glass rim, no pointer-following light */
+html[data-skin="skeuo"] :is(.glass, .card, .navbar, .modal-content, .dropdown-menu, .offcanvas, .toast, .popover, .lg-rim)::before,
+html[data-skin="skeuo"] :is(.glass, .card, .navbar, .lg-shine)::after { display: none; }
+/* a panel inside a panel is a recessed well */
+html[data-skin="skeuo"] :is(.card .card, .glass .glass, .glass .card, .card .glass, .modal-content .card, .offcanvas .card, .modal-content .glass, .offcanvas .glass) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-well-hi) 55%, var(--sk-face)), color-mix(in srgb, var(--sk-well-hi) 85%, var(--sk-face)));
+  box-shadow: var(--sk-well); border-radius: var(--lg-r-md);
+}
+
+/* 3 ─ TYPE ───────────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) { text-shadow: var(--sk-engrave); font-weight: 800; }
+html[data-skin="skeuo"] :is(.form-label, label, .lead, .lg-eyebrow, .breadcrumb, .dropdown-header) { text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] .lg-eyebrow { color: var(--sk-ink); }
+html[data-skin="skeuo"] .lg-eyebrow::before { content: ""; display: inline-block; width: .62em; height: .62em; margin-right: .55em; vertical-align: .02em; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0, var(--sk-led) 45%, #0aa98d 100%); box-shadow: 0 0 6px 1px var(--sk-led-glow), 0 0 0 1.5px rgba(0,0,0,.28); }
+html[data-skin="skeuo"] .lg-gradient-text { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--sk-ink); -webkit-text-fill-color: currentColor; text-decoration: underline; text-decoration-thickness: .09em; text-decoration-color: var(--sk-led); text-underline-offset: .12em; }
+html[data-skin="skeuo"] code { background: var(--sk-plate); color: var(--sk-ink); box-shadow: inset 0 1px 3px rgba(0,0,0,.25); font-family: var(--sk-font-lcd); }
+html[data-skin="skeuo"] :is(kbd, .lg-kbd) { font-family: var(--sk-font-lcd); color: var(--sk-ink); background: var(--sk-key); border: 0; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 2px 0 rgba(0,0,0,.35); }
+html[data-skin="skeuo"] .lg-divider { background: linear-gradient(90deg, transparent, var(--lg-line-strong), transparent); box-shadow: 0 1px 0 var(--sk-hi); }
+
+/* 4 ─ SHELL ──────────────────────────────────────────────────────────────── */
+/* sidebar: a rack panel with rivets */
+html[data-skin="skeuo"] .app-sidebar {
+  background:
+    radial-gradient(circle at 15px 15px, #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 15px) 15px, #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at 15px calc(100% - 15px), #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 15px) calc(100% - 15px), #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    var(--sk-grain), var(--sk-brush),
+    linear-gradient(180deg, var(--sk-face-hi), var(--sk-face) 18%, color-mix(in srgb, var(--sk-face-lo) 40%, var(--sk-face))) !important;
+  border: 0 !important; border-right: 1px solid rgba(0,0,0,.35) !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  box-shadow: inset -1px 0 0 var(--sk-hi), 8px 0 18px -8px var(--sk-shadow) !important;
+}
+html[data-skin="skeuo"] .sidebar-header { border-bottom: 0; box-shadow: 0 1px 0 var(--sk-hi), 0 -1px 0 rgba(0,0,0,.2) inset; padding-top: 1.6rem; }
+html[data-skin="skeuo"] .sidebar-brand, html[data-skin="skeuo"] .app-sidebar .sidebar-brand { color: var(--sk-ink) !important; text-shadow: var(--sk-engrave); letter-spacing: -.02em; }
+html[data-skin="skeuo"] .sidebar-nav .nav-link, html[data-skin="skeuo"] .app-sidebar .nav-link {
+  color: var(--sk-ink-2) !important; text-shadow: var(--sk-engrave); font-weight: 700; border-left: 0 !important;
+  border-radius: 11px; position: relative; transform: none;
+  transition: background .12s, box-shadow .12s, color .12s;
+}
+html[data-skin="skeuo"] .sidebar-nav .nav-link i { color: var(--sk-ink-3); transition: color .12s; }
+html[data-skin="skeuo"] .sidebar-nav .nav-link:hover, html[data-skin="skeuo"] .app-sidebar .nav-link:hover {
+  color: var(--sk-ink) !important; background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.12)) !important;
+  box-shadow: inset 0 1px 0 var(--sk-hi), 0 1px 2px rgba(0,0,0,.18); transform: none;
+}
+/* the active page is a key held down, with its lamp lit */
+html[data-skin="skeuo"] .sidebar-nav .nav-link.active, html[data-skin="skeuo"] .app-sidebar .nav-link.active {
+  color: var(--sk-ink) !important; background: linear-gradient(180deg, color-mix(in srgb, var(--sk-well-hi) 70%, var(--sk-face)), var(--sk-face)) !important;
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.36), 0 1px 0 var(--sk-hi) !important; border-left: 0 !important;
+}
+html[data-skin="skeuo"] .sidebar-nav .nav-link.active i { color: var(--sk-led-ink); }
+html[data-skin="skeuo"] .sidebar-nav .nav-link.active::after {
+  content: ""; flex: none; margin-left: auto; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--sk-led); box-shadow: 0 0 5px 2px var(--sk-led-glow), inset 0 1px 1px rgba(255,255,255,.8);
+}
+html[data-skin="skeuo"] .nav-section, html[data-skin="skeuo"] .app-sidebar .nav-section {
+  color: var(--sk-ink-3) !important; text-shadow: var(--sk-engrave); letter-spacing: .1em;
+  margin: .5rem .4rem 0; padding: 1rem .6rem .4rem; border-bottom: 1px solid var(--lg-line); box-shadow: 0 1px 0 var(--sk-hi);
+}
+html[data-skin="skeuo"] .app-sidebar .nav-link[href*="logout"] { color: var(--lg-t-danger) !important; }
+html[data-skin="skeuo"]:not([data-theme="dark"]) .app-sidebar .nav-link[href*="logout"] { color: color-mix(in srgb, var(--lg-t-danger) 82%, #000) !important; }
+html[data-skin="skeuo"] .app-sidebar [style*="border-top"] { border-top: 0 !important; box-shadow: inset 0 1px 0 rgba(0,0,0,.18), 0 -1px 0 var(--sk-hi); }
+html[data-skin="skeuo"] .app-sidebar .btn-link { color: var(--sk-ink-2) !important; }
+
+/* logo: a teal dome in a bezel, like the console's */
+html[data-skin="skeuo"] .lg-logo {
+  color: #0b3a33; border-radius: 12px; overflow: visible;
+  background: linear-gradient(180deg, #7bf3dc, var(--sk-led) 55%, #0aa98d);
+  box-shadow: inset 0 2px 1px rgba(255,255,255,.75), inset 0 -3px 4px rgba(0,0,0,.25), 0 4px 8px rgba(0,0,0,.35), 0 0 0 3px var(--sk-well-hi), 0 0 0 4px var(--sk-lo);
+}
+html[data-skin="skeuo"] .lg-logo::after { display: none; }
+
+/* top bar: a brushed strip */
+html[data-skin="skeuo"] .app-topbar {
+  background: var(--sk-grain), var(--sk-brush), linear-gradient(180deg, var(--sk-face-hi), var(--sk-face)) !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-bottom: 0 !important;
+  box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -2px 0 var(--sk-lo), 0 8px 16px -8px var(--sk-shadow) !important;
+}
+html[data-skin="skeuo"] .topbar-search .input-group { background: var(--sk-field); border-radius: 10px; box-shadow: var(--sk-well), 0 0 0 1px rgba(0,0,0,.25); }
+html[data-skin="skeuo"] .topbar-search :is(.input-group-text, .form-control) { background: transparent !important; box-shadow: none !important; border: 0 !important; color: var(--sk-ink) !important; }
+html[data-skin="skeuo"] .topbar-search .input-group-text { border-radius: 10px 0 0 10px !important; }
+html[data-skin="skeuo"] .topbar-search .form-control { border-radius: 0 10px 10px 0 !important; }
+html[data-skin="skeuo"] .topbar-search .input-group:focus-within { box-shadow: var(--sk-well), 0 0 0 3px var(--lg-accent-ring); }
+html[data-skin="skeuo"] .topbar-search .input-group:focus-within .input-group-text { border-color: transparent !important; }
+
+/* round keys and the account dome */
+html[data-skin="skeuo"] .lg-icon-btn {
+  background: var(--sk-key); border: 0; color: var(--sk-ink); box-shadow: var(--sk-key-sh);
+  transition: transform .12s, box-shadow .12s, filter .15s;
+}
+html[data-skin="skeuo"] .lg-icon-btn:hover { background: var(--sk-key); transform: none; filter: brightness(1.06); color: var(--sk-ink); }
+html[data-skin="skeuo"] .lg-icon-btn:active, html[data-skin="skeuo"] .lg-icon-btn[aria-pressed="true"] { transform: translateY(2px); box-shadow: var(--sk-key-down); }
+html[data-skin="skeuo"] .lg-icon-btn[aria-pressed="true"] { color: var(--sk-led-ink); }
+html[data-skin="skeuo"] .lg-avatar {
+  color: #052f28; background: linear-gradient(180deg, #7bf3dc, var(--sk-led) 55%, #0aa98d);
+  box-shadow: inset 0 2px 1px rgba(255,255,255,.75), inset 0 -3px 4px rgba(0,0,0,.25), 0 0 0 2px var(--sk-well-hi), 0 0 0 3px var(--sk-lo), 0 3px 5px rgba(0,0,0,.3);
+}
+html[data-skin="skeuo"] .lg-dot { background: var(--sk-rec); box-shadow: 0 0 0 2px var(--sk-face), 0 0 6px 2px rgba(217,50,50,.7); }
+html[data-skin="skeuo"] .app-topbar .btn-link { color: var(--sk-ink) !important; }
+
+/* public navbar: a floating metal bar */
+html[data-skin="skeuo"] .navbar { border-radius: 18px; background: var(--sk-grain), var(--sk-brush), linear-gradient(180deg, var(--sk-face-hi), var(--sk-face)); }
+html[data-skin="skeuo"] .navbar.lg-navbar-float { border-radius: 18px; border-width: 0; corner-shape: round; }
+html[data-skin="skeuo"] .navbar-brand, html[data-skin="skeuo"] .navbar-dark .navbar-brand, html[data-skin="skeuo"] .navbar-light .navbar-brand { color: var(--sk-ink) !important; text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] .navbar .nav-link, html[data-skin="skeuo"] .navbar-dark .navbar-nav .nav-link, html[data-skin="skeuo"] .navbar-light .navbar-nav .nav-link {
+  color: var(--sk-ink-2) !important; text-shadow: var(--sk-engrave); font-weight: 800; border-radius: 10px;
+}
+html[data-skin="skeuo"] .navbar .nav-link:hover { background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.12)); color: var(--sk-ink) !important; }
+html[data-skin="skeuo"] .navbar .nav-link.active, html[data-skin="skeuo"] .navbar .nav-link[aria-current="page"], html[data-skin="skeuo"] .navbar .show > .nav-link {
+  color: var(--sk-ink) !important; background: linear-gradient(180deg, color-mix(in srgb, var(--sk-well-hi) 70%, var(--sk-face)), var(--sk-face));
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.34), 0 1px 0 var(--sk-hi);
+}
+html[data-skin="skeuo"] .navbar-toggler { background: var(--sk-key); border: 0; border-radius: 10px; box-shadow: var(--sk-key-sh); }
+html[data-skin="skeuo"] .navbar.is-scrolled { box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -2px 0 var(--sk-lo), var(--lg-shadow); }
+
+/* 5 ─ BUTTONS: domed keys ────────────────────────────────────────────────── */
+html[data-skin="skeuo"] .btn {
+  --lg-btn-bg: var(--sk-key); --lg-btn-bg-h: var(--sk-key); --lg-btn-bd: transparent; --lg-btn-sh: var(--sk-key-sh);
+}
+html[data-skin="skeuo"] .btn:not(.btn-link):not(.btn-close) {
+  border: 0; border-radius: 12px; font-weight: 800; letter-spacing: 0; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  transition: transform .12s, box-shadow .12s, filter .15s;
+}
+html[data-skin="skeuo"][data-theme="dark"] .btn:not(.btn-link):not(.btn-close) { text-shadow: 0 -1px 0 rgba(0,0,0,.6); }
+html[data-skin="skeuo"] .btn:not(.btn-link):not(.btn-close):hover { transform: none; filter: brightness(1.06); }
+html[data-skin="skeuo"] .btn:not(.btn-link):not(.btn-close):is(:active, .active, .show) { transform: translateY(2px); filter: none; box-shadow: var(--sk-key-down); }
+html[data-skin="skeuo"] .btn:not(.btn-link):not(.btn-close):disabled, html[data-skin="skeuo"] .btn.disabled { opacity: .55; transform: none; filter: saturate(.6); }
+/* solid variants: a coloured lacquer key */
+html[data-skin="skeuo"] :is(.btn-primary, .btn-success, .btn-danger, .btn-info, .btn-dark, .btn-warning) {
+  --sk-mix: 60%;   /* how much of the key colour survives at the top highlight; white-text keys keep more */
+  --lg-btn-bg: linear-gradient(180deg, color-mix(in srgb, var(--lg-c) var(--sk-mix), #fff), var(--lg-c) 55%, color-mix(in srgb, var(--lg-c) 76%, #000));
+  --lg-btn-bg-h: var(--lg-btn-bg);
+  --lg-btn-sh: inset 0 2px 1px rgba(255,255,255,.55), inset 0 -3px 4px rgba(0,0,0,.28), 0 0 0 1px color-mix(in srgb, var(--lg-c) 50%, #000), 0 4px 6px rgba(0,0,0,.32);
+}
+html[data-skin="skeuo"] .btn-primary { --lg-c: #14c9a9; }
+html[data-skin="skeuo"] .btn-success { --lg-c: #0f7a3c; --sk-mix: 88%; }
+html[data-skin="skeuo"] .btn-danger  { --lg-c: #c42a2a; --sk-mix: 88%; }
+html[data-skin="skeuo"] .btn-info    { --lg-c: #1c6fc4; --lg-btn-fg: #fff; --sk-mix: 88%; }
+html[data-skin="skeuo"] .btn-warning { --lg-c: #f0a020; --lg-btn-fg: #2a1700; }
+html[data-skin="skeuo"] .btn-dark    { --lg-c: #3d4145; --lg-btn-fg: #fff; --sk-mix: 88%; }
+html[data-skin="skeuo"] :is(.btn-success, .btn-danger, .btn-info, .btn-dark):not(.btn-link) { text-shadow: 0 -1px 0 rgba(0,0,0,.4); }
+html[data-skin="skeuo"] :is(.btn-primary, .btn-warning):not(.btn-link) { text-shadow: 0 1px 0 rgba(255,255,255,.4); }
+html[data-skin="skeuo"] .btn-link { color: var(--lg-accent-text); text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] .btn-link:hover { color: var(--sk-ink); }
+html[data-skin="skeuo"] .btn-close { background-color: var(--sk-plate); box-shadow: var(--sk-key-sh); opacity: .9; border-radius: 50%; }
+html[data-skin="skeuo"] .btn-group > .btn:not(:first-child) { margin-left: 0; }
+html[data-skin="skeuo"] .btn.is-loading::after { border-color: rgba(0,0,0,.25); border-top-color: var(--sk-ink); }
+
+/* 6 ─ CARDS AND STAT LCDs ────────────────────────────────────────────────── */
+html[data-skin="skeuo"] .card { --bs-card-border-radius: var(--lg-r-lg); transition: transform .15s, box-shadow .15s; }
+html[data-skin="skeuo"] .card-header, html[data-skin="skeuo"] .card-footer {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-face-lo) 42%, transparent), color-mix(in srgb, var(--sk-face-lo) 18%, transparent)) !important;
+  border-color: transparent !important; text-shadow: var(--sk-engrave);
+  box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -1px 0 var(--lg-line);
+}
+html[data-skin="skeuo"] .card-header { border-radius: var(--lg-r-lg) var(--lg-r-lg) 0 0; }
+html[data-skin="skeuo"] .card-footer { border-radius: 0 0 var(--lg-r-lg) var(--lg-r-lg); }
+html[data-skin="skeuo"] a.card:hover, html[data-skin="skeuo"] .lg-lift:hover {
+  transform: translateY(-3px); box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -2px 0 var(--sk-lo), 0 16px 26px -10px var(--sk-shadow), 0 4px 8px rgba(0,0,0,.25);
+}
+html[data-skin="skeuo"] :is(.card.bg-primary, .card.bg-success, .card.bg-danger, .card.bg-warning, .card.bg-info, .card.bg-dark, .card.bg-secondary) {
+  background: var(--sk-grain), linear-gradient(180deg, color-mix(in srgb, var(--lg-c) 60%, #fff), var(--lg-c) 60%, color-mix(in srgb, var(--lg-c) 78%, #000)) !important;
+}
+html[data-skin="skeuo"] .list-group-item { background: color-mix(in srgb, var(--sk-paper) 70%, transparent); }
+
+/* stat tiles: the number is an LCD, the label is engraved on the metal below it */
+html[data-skin="skeuo"] .lg-stat .val {
+  display: block; width: fit-content; max-width: 100%; padding: .32rem .7rem .22rem; border-radius: 10px;
+  font-family: var(--sk-font-lcd); font-weight: 400; letter-spacing: .02em; line-height: 1.1;
+  font-size: clamp(1.4rem, 1rem + 1.2vw, 2.15rem);
+  --lcd-ink: var(--sk-lcd-ink); --lcd-glow: rgba(114,247,218,.55);
+  color: var(--lcd-ink) !important; text-shadow: 0 0 8px var(--lcd-glow);
+  background: linear-gradient(180deg, #0a1315, var(--sk-lcd-bg));
+  box-shadow: inset 0 4px 10px rgba(0,0,0,.85), 0 0 0 3px var(--sk-well-lo), 0 0 0 4px rgba(0,0,0,.3);
+  margin: 4px 4px .7rem; position: relative; overflow: hidden;
+}
+html[data-skin="skeuo"] .lg-stat .val::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px), linear-gradient(160deg, rgba(255,255,255,.08), transparent 35%); }
+html[data-skin="skeuo"] .lg-stat .val.text-success { --lcd-ink: #8dffb0; --lcd-glow: rgba(120,255,160,.5); }
+html[data-skin="skeuo"] .lg-stat .val.text-danger  { --lcd-ink: #ff958d; --lcd-glow: rgba(255,120,110,.55); }
+html[data-skin="skeuo"] .lg-stat .val.text-warning { --lcd-ink: #ffd37a; --lcd-glow: rgba(255,200,90,.5); }
+html[data-skin="skeuo"] .lg-stat .val.text-info    { --lcd-ink: #8fd0ff; --lcd-glow: rgba(120,190,255,.5); }
+html[data-skin="skeuo"] .lg-stat .lbl { color: var(--sk-ink-2); text-shadow: var(--sk-engrave); font-weight: 800; }
+html[data-skin="skeuo"] .lg-stat { --lg-c: var(--sk-lcd-ink); }
+html[data-skin="skeuo"] .lg-stat .ic {
+  color: color-mix(in srgb, var(--lg-c) 55%, #fff); border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #17302f, #0a1315);
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.8), 0 0 0 2px var(--sk-well-lo), 0 0 0 3px rgba(0,0,0,.3);
+}
+html[data-skin="skeuo"] .lg-stat .ic svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--lg-c) 80%, transparent)); }
+html[data-skin="skeuo"] .lg-delta { background: var(--sk-plate); color: var(--lg-t-success); box-shadow: inset 0 2px 3px rgba(0,0,0,.25), 0 1px 0 var(--sk-hi); text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] .lg-delta.is-down { background: var(--sk-plate); color: var(--lg-t-danger); }
+
+/* 7 ─ FORMS: recessed fields, physical switches ──────────────────────────── */
+html[data-skin="skeuo"] .form-label, html[data-skin="skeuo"] label { color: var(--sk-ink-2); font-weight: 800; }
+html[data-skin="skeuo"] :is(.form-control, .form-select) {
+  background-color: var(--sk-field); color: var(--sk-ink); border: 0; border-radius: 10px;
+  box-shadow: var(--sk-well), 0 0 0 1px rgba(0,0,0,.25);
+}
+html[data-skin="skeuo"] :is(.form-control, .form-select):hover { background-color: var(--sk-field); }
+html[data-skin="skeuo"] :is(.form-control, .form-select):focus {
+  background-color: var(--sk-field); color: var(--sk-ink); border-color: transparent;
+  box-shadow: var(--sk-well), 0 0 0 1px rgba(0,0,0,.25), 0 0 0 4px var(--lg-accent-ring);
+}
+html[data-skin="skeuo"] :is(.form-control, .form-select):disabled { background-color: color-mix(in srgb, var(--sk-field) 55%, var(--sk-face)); opacity: .75; }
+html[data-skin="skeuo"] .form-control::placeholder { color: var(--sk-ink-3); }
+html[data-skin="skeuo"] .input-group-text {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-face-lo) 60%, var(--sk-face)), var(--sk-face)) !important;
+  border: 0 !important; color: var(--sk-ink-2) !important; box-shadow: inset 0 1px 0 var(--sk-hi), inset 0 -2px 3px rgba(0,0,0,.18);
+}
+html[data-skin="skeuo"] select option { background: var(--sk-field); color: var(--sk-ink); }
+html[data-skin="skeuo"] :is(.is-invalid, .was-validated .form-control:invalid) { box-shadow: var(--sk-well), 0 0 0 3px color-mix(in srgb, var(--sk-rec) 45%, transparent) !important; }
+html[data-skin="skeuo"] input[type="file"]::file-selector-button { background: var(--sk-key); color: var(--sk-ink); border: 0; box-shadow: var(--sk-key-sh); border-radius: 8px; margin-left: -.95rem; }
+html[data-skin="skeuo"] .form-check-input { background-color: var(--sk-field); border: 0; box-shadow: var(--sk-well), 0 0 0 1px rgba(0,0,0,.3); }
+html[data-skin="skeuo"] .form-check-input:checked { background-color: var(--sk-led); box-shadow: inset 0 2px 5px rgba(0,0,0,.3), 0 0 6px 1px var(--sk-led-glow), 0 0 0 1px rgba(0,0,0,.3); }
+html[data-skin="skeuo"] .form-check-input[type="checkbox"]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23052f28' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3E%3C/svg%3E"); }
+html[data-skin="skeuo"] .form-check-input[type="radio"]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='2' fill='%23052f28'/%3E%3C/svg%3E"); }
+html[data-skin="skeuo"] .form-check-input:focus { box-shadow: var(--sk-well), 0 0 0 4px var(--lg-accent-ring); }
+html[data-skin="skeuo"] .form-check-label { color: var(--sk-ink); font-weight: 700; }
+/* switch: the console's day/night toggle */
+html[data-skin="skeuo"] .form-switch .form-check-input {
+  background-color: var(--sk-well-lo); box-shadow: inset 0 3px 7px rgba(0,0,0,.55), 0 1px 0 var(--sk-hi); border: 0; filter: none;
+  background-image: radial-gradient(circle at 35% 30%, #fff, #c3c6c8 45%, #82868a 100%);
+  background-size: 1.55em 1.55em;
+}
+html[data-skin="skeuo"] .form-switch .form-check-input:checked {
+  background-color: #1fbf62; box-shadow: inset 0 3px 7px rgba(0,0,0,.35), 0 0 8px 1px rgba(31,191,98,.6);
+  background-image: radial-gradient(circle at 35% 30%, #fff, #c3c6c8 45%, #82868a 100%);
+}
+html[data-skin="skeuo"] .form-range::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--lg-accent) var(--fill, 50%), var(--sk-well-lo) var(--fill, 50%)); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
+html[data-skin="skeuo"] .form-range::-moz-range-track { background: var(--sk-well-lo); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
+html[data-skin="skeuo"] .form-range::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #fff, #c3c6c8 45%, #82868a 100%); box-shadow: 0 3px 5px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.3); }
+html[data-skin="skeuo"] .form-range::-moz-range-thumb { background: radial-gradient(circle at 35% 30%, #fff, #c3c6c8 45%, #82868a 100%); box-shadow: 0 3px 5px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.3); }
+
+/* 8 ─ TABLES: a printed ledger set into the panel ────────────────────────── */
+html[data-skin="skeuo"] :is(.card > .table-responsive, .card > .table, .card-body > .table-responsive, .tab-pane > .table-responsive) {
+  background: var(--sk-paper); margin: .35rem .6rem .7rem; width: auto; border-radius: 12px;
+  box-shadow: var(--sk-well), 0 0 0 1px rgba(0,0,0,.18);
+}
+html[data-skin="skeuo"] .card > .table { width: calc(100% - 1.2rem); }
+html[data-skin="skeuo"] .table > thead > tr > *, html[data-skin="skeuo"] :is(.table-light > tr > *, thead.table-light > tr > *, thead.table-dark > tr > *, .table-dark > thead > tr > *) {
+  background: linear-gradient(180deg, var(--sk-face-hi), var(--sk-face)); color: var(--sk-ink-2); text-shadow: var(--sk-engrave);
+  border-bottom: 1px solid var(--lg-line-strong); box-shadow: inset 0 1px 0 var(--sk-hi);
+}
+html[data-skin="skeuo"] .table > thead > tr > :first-child { border-top-left-radius: 12px; }
+html[data-skin="skeuo"] .table > thead > tr > :last-child { border-top-right-radius: 12px; }
+html[data-skin="skeuo"] .table { --bs-table-color: var(--sk-ink); }
+html[data-skin="skeuo"] .table > :not(caption) > * > * { border-bottom-color: var(--lg-line); }
+html[data-skin="skeuo"] .table > tbody > tr:last-child > * { border-bottom-color: transparent; }
+@media (max-width: 575.98px) {
+  html[data-skin="skeuo"].lg-js .table-stack > tbody > tr > td::before { color: var(--sk-ink-3); text-shadow: var(--sk-engrave); }
+}
+
+/* 9 ─ BADGES, ALERTS, PAGINATION, TABS, PROGRESS ─────────────────────────── */
+/* a badge is a label plate with a lamp in it */
+html[data-skin="skeuo"] .badge {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-plate) 93%, #000), var(--sk-plate)) !important; color: var(--lg-bt) !important;
+  border: 0; box-shadow: inset 0 1px 3px rgba(0,0,0,.26), 0 1px 0 var(--sk-hi); text-shadow: var(--sk-engrave);
+}
+html[data-skin="skeuo"] .badge.is-dot::before, html[data-skin="skeuo"] .lg-chip.is-dot::before {
+  width: .62em; height: .62em; vertical-align: -.02em;
+  background: radial-gradient(circle at 35% 30%, #fff 0, var(--lg-c) 45%, color-mix(in srgb, var(--lg-c) 75%, #000) 100%);
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--lg-c) 80%, transparent), inset 0 0 0 1px rgba(0,0,0,.25);
+}
+html[data-skin="skeuo"] .badge.bg-danger:not(.is-dot) {
+  background: linear-gradient(180deg, var(--sk-rec-hi), var(--sk-rec) 55%, var(--sk-rec-lo)) !important; color: #fff !important;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.5), 0 1px 3px rgba(0,0,0,.4); text-shadow: 0 -1px 0 rgba(0,0,0,.35);
+}
+html[data-skin="skeuo"] .position-absolute.badge { box-shadow: 0 0 0 2px var(--sk-face), inset 0 1px 1px rgba(255,255,255,.5); }
+
+html[data-skin="skeuo"] .alert {
+  background: linear-gradient(180deg, var(--sk-plate), color-mix(in srgb, var(--sk-plate) 82%, var(--sk-face-lo))) !important; color: var(--sk-ink) !important;
+  border: 0; border-radius: var(--lg-r-md); padding-left: 1.5rem;
+  box-shadow: inset 7px 0 0 var(--lg-c), inset 0 2px 5px rgba(0,0,0,.22), 0 1px 0 var(--sk-hi);
+}
+html[data-skin="skeuo"] .alert .alert-link { color: inherit; }
+
+html[data-skin="skeuo"] .pagination { gap: .4rem; }
+html[data-skin="skeuo"] .page-link {
+  background: var(--sk-key); color: var(--sk-ink); border: 0 !important; border-radius: 10px !important; font-weight: 800;
+  box-shadow: var(--sk-key-sh); text-shadow: 0 1px 0 rgba(255,255,255,.5); transition: transform .12s, box-shadow .12s, filter .15s;
+}
+html[data-skin="skeuo"] .page-link:hover { background: var(--sk-key); color: var(--sk-ink); transform: none; filter: brightness(1.06); }
+html[data-skin="skeuo"] .page-link:active { transform: translateY(2px); box-shadow: var(--sk-key-down); }
+html[data-skin="skeuo"] .page-link:focus { box-shadow: var(--sk-key-sh), 0 0 0 4px var(--lg-accent-ring); }
+html[data-skin="skeuo"] .page-item.active .page-link {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-well-hi) 60%, var(--sk-face)), var(--sk-face)); color: var(--sk-led-ink);
+  transform: translateY(2px); box-shadow: var(--sk-key-down), inset 0 -3px 0 var(--sk-led), 0 0 8px -2px var(--sk-led-glow);
+}
+html[data-skin="skeuo"] .page-item.disabled .page-link { opacity: .5; background: var(--sk-key); filter: saturate(.5); }
+
+/* tabs and pills: a bank of keys in a recessed rail */
+html[data-skin="skeuo"] :is(.nav-tabs, .nav-pills) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sk-well-hi) 65%, var(--sk-face)), color-mix(in srgb, var(--sk-well-hi) 90%, var(--sk-face)));
+  border: 0; border-radius: 14px; padding: 5px; gap: 4px; box-shadow: var(--sk-well);
+}
+html[data-skin="skeuo"] :is(.nav-tabs, .nav-pills) .nav-link { border-radius: 10px; color: var(--sk-ink-2); font-weight: 800; text-shadow: var(--sk-engrave); transition: background .12s, box-shadow .12s; }
+html[data-skin="skeuo"] :is(.nav-tabs, .nav-pills) .nav-link:hover { background: linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,.14)); color: var(--sk-ink); }
+html[data-skin="skeuo"] :is(.nav-tabs .nav-link.active, .nav-pills .nav-link.active, .nav-pills .show > .nav-link) {
+  background: var(--sk-key); color: var(--sk-led-ink); box-shadow: var(--sk-key-sh), inset 0 -3px 0 var(--sk-led);
+}
+
+html[data-skin="skeuo"] .progress { --bs-progress-bg: var(--sk-well-lo); background: var(--sk-well-lo); box-shadow: inset 0 3px 6px rgba(0,0,0,.5), 0 1px 0 var(--sk-hi); }
+html[data-skin="skeuo"] .progress-bar { background-image: linear-gradient(180deg, #7bf3dc, var(--sk-led) 55%, #0aa98d); box-shadow: 0 0 8px var(--sk-led-glow); }
+html[data-skin="skeuo"] .progress-bar.bg-success { background-image: linear-gradient(180deg, #7ff0a6, #1fbf62 55%, #0e8a42); box-shadow: 0 0 8px rgba(31,191,98,.6); }
+html[data-skin="skeuo"] .progress-bar.bg-danger  { background-image: linear-gradient(180deg, var(--sk-rec-hi), var(--sk-rec) 55%, var(--sk-rec-lo)); box-shadow: 0 0 8px rgba(217,50,50,.55); }
+html[data-skin="skeuo"] .progress-bar.bg-warning { background-image: linear-gradient(180deg, #ffd27a, #f0a020 55%, #c27a00); box-shadow: 0 0 8px rgba(240,160,32,.55); }
+html[data-skin="skeuo"] .progress-bar.bg-info    { background-image: linear-gradient(180deg, #8cc6fa, #2f8fe8 55%, #1a62b0); box-shadow: 0 0 8px rgba(47,143,232,.55); }
+html[data-skin="skeuo"] .breadcrumb-item.active { color: var(--sk-ink-2); }
+
+/* 10 ─ OVERLAYS ──────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] .modal-content { border-radius: var(--lg-r-xl); }
+html[data-skin="skeuo"] :is(.modal-header, .modal-footer) { border-color: transparent; box-shadow: 0 1px 0 var(--sk-hi), 0 -1px 0 var(--lg-line) inset; }
+html[data-skin="skeuo"] .modal-backdrop, html[data-skin="skeuo"] .modal-backdrop.show { --bs-backdrop-bg: rgba(8, 10, 12, .55); background-color: rgba(8, 10, 12, .55); -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-skin="skeuo"] .dropdown-menu { --lg-surface: var(--lg-surface-hi); border-radius: var(--lg-r-md); animation: none; }
+html[data-skin="skeuo"] .dropdown-item { color: var(--sk-ink); font-weight: 700; border-radius: 9px; }
+html[data-skin="skeuo"] .dropdown-item:hover, html[data-skin="skeuo"] .dropdown-item:focus {
+  background: linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.05)); color: var(--sk-ink); box-shadow: inset 0 2px 4px rgba(0,0,0,.22);
+}
+html[data-skin="skeuo"] .dropdown-item.text-danger:hover { background: color-mix(in srgb, var(--sk-rec) 16%, transparent); }
+html[data-skin="skeuo"] .dropdown-divider { border-color: var(--lg-line); box-shadow: 0 1px 0 var(--sk-hi); }
+html[data-skin="skeuo"] .tooltip { --bs-tooltip-bg: #1d2023; --bs-tooltip-color: var(--sk-lcd-ink); font-family: var(--sk-font-lcd); }
+html[data-skin="skeuo"] .lg-toast .lg-toast-ic { border-radius: 50%; background: var(--sk-lcd-bg); box-shadow: inset 0 3px 6px rgba(0,0,0,.8), 0 0 0 2px var(--sk-well-lo); }
+html[data-skin="skeuo"] .lg-toast.is-success .lg-toast-ic { color: #5ee08f; } html[data-skin="skeuo"] .lg-toast.is-danger .lg-toast-ic { color: #ff8d85; }
+html[data-skin="skeuo"] .lg-toast.is-warning .lg-toast-ic { color: #ffc65c; } html[data-skin="skeuo"] .lg-toast.is-info .lg-toast-ic, html[data-skin="skeuo"] .lg-toast .lg-toast-ic { color: var(--sk-lcd-ink); }
+
+/* 11 ─ COMPONENTS ────────────────────────────────────────────────────────── */
+html[data-skin="skeuo"] .lg-chip { background: linear-gradient(180deg, color-mix(in srgb, var(--sk-plate) 93%, #000), var(--sk-plate)); border: 0; color: var(--sk-ink-2); box-shadow: inset 0 2px 4px rgba(0,0,0,.28), 0 1px 0 var(--sk-hi); text-shadow: var(--sk-engrave); font-weight: 800; }
+html[data-skin="skeuo"] .lg-empty .ic { border-radius: 50%; color: var(--sk-lens); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--sk-well-hi) 60%, var(--sk-face)), var(--sk-well-lo)); box-shadow: inset 0 4px 9px rgba(0,0,0,.45), 0 1px 0 var(--sk-hi); }
+html[data-skin="skeuo"] .lg-skeleton { background: var(--sk-well-lo); box-shadow: inset 0 2px 4px rgba(0,0,0,.35); }
+html[data-skin="skeuo"] .lg-auth .card {
+  background:
+    radial-gradient(circle at 16px 16px, #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 16px) 16px, #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at 16px calc(100% - 16px), #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 16px) calc(100% - 16px), #fff 0, #b7bbbd 2px, #7d8184 5.5px, rgba(0,0,0,.4) 6px, transparent 7px),
+    var(--sk-grain), var(--sk-brush), var(--lg-surface);
+  border-radius: var(--lg-r-xl);
+}
+
+/* book covers keep their cloth-bound look; only the shadow gets a desk to fall on */
+html[data-skin="skeuo"] .lg-cover { box-shadow: 0 2px 3px rgba(0,0,0,.3), 0 10px 18px -6px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.14); }
+html[data-skin="skeuo"] .lg-book:hover .lg-cover { transform: translateY(-3px); }
+html[data-skin="skeuo"] .lg-book h3 { text-shadow: var(--sk-engrave); }
+
+/* hero: the picture becomes a dial */
+html[data-skin="skeuo"] .lg-hero h1 { text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] :is(.lg-hero .lead, .lg-page-header p, .lg-page-header .lead) { color: var(--sk-ink); }
+html[data-skin="skeuo"] .lg-stage::before {
+  content: ""; position: absolute; inset: 3%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 36%, color-mix(in srgb, var(--sk-paper) 92%, #fff), var(--sk-paper) 60%, color-mix(in srgb, var(--sk-paper) 80%, #000));
+  box-shadow: inset 0 10px 22px rgba(0,0,0,.4), 0 0 0 14px color-mix(in srgb, var(--sk-face-hi) 75%, var(--sk-face)), 0 0 0 15px rgba(0,0,0,.35), 0 28px 40px -12px var(--sk-shadow);
+}
+html[data-skin="skeuo"] .lg-stage::after {
+  content: ""; position: absolute; inset: 3%; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: repeating-conic-gradient(from -135deg, color-mix(in srgb, var(--sk-ink) 70%, transparent) 0 .7deg, transparent .7deg 13.5deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8%), #000 calc(100% - 8%));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 8%), #000 calc(100% - 8%));
+}
+html[data-skin="skeuo"] .lg-stage .lg-bookstack { z-index: 2; }
+html[data-skin="skeuo"] .lg-stage .lg-orbit, html[data-skin="skeuo"] .lg-stage .lg-arc { display: none; }
+html[data-skin="skeuo"] .lg-glass-tag { border-radius: 12px; }
+html[data-skin="skeuo"] .lg-glass-tag small { color: var(--sk-ink-3); }
+html[data-skin="skeuo"] .lg-glass-tag .ic { border-radius: 50%; color: var(--sk-lens); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--sk-well-hi) 60%, var(--sk-face)), var(--sk-well-lo)); box-shadow: inset 0 3px 6px rgba(0,0,0,.45); }
+
+/* charts: bars are lit segments on an LCD */
+html[data-skin="skeuo"] .lg-bars { background: linear-gradient(180deg, #0a1315, var(--sk-lcd-bg)); padding: 14px 12px 8px; border-radius: 12px; box-shadow: inset 0 4px 10px rgba(0,0,0,.85), 0 0 0 3px var(--sk-well-lo), 0 0 0 4px rgba(0,0,0,.3); }
+html[data-skin="skeuo"] .lg-bar .col i { background: linear-gradient(180deg, #b5fff0, var(--sk-led) 45%, #0aa98d); box-shadow: 0 0 8px var(--sk-led-glow); border-radius: 3px 3px 1px 1px; }
+html[data-skin="skeuo"] .lg-bar.is-zero .col i { background: rgba(114,247,218,.18); box-shadow: none; }
+html[data-skin="skeuo"] .lg-bar .col b { color: var(--sk-lcd-ink); font-family: var(--sk-font-lcd); }
+html[data-skin="skeuo"] .lg-bar > span { color: var(--sk-lcd-dim); font-family: var(--sk-font-lcd); }
+html[data-skin="skeuo"] .lg-hbar .t, html[data-skin="skeuo"] .lg-split { background: var(--sk-well-lo); box-shadow: inset 0 2px 4px rgba(0,0,0,.5), 0 1px 0 var(--sk-hi); }
+html[data-skin="skeuo"] .lg-hbar .t i { background: linear-gradient(180deg, #7bf3dc, var(--sk-led) 55%, #0aa98d); box-shadow: 0 0 6px var(--sk-led-glow); }
+html[data-skin="skeuo"] .lg-split .a { background: linear-gradient(180deg, #7ff0a6, #1fbf62 55%, #0e8a42); }
+html[data-skin="skeuo"] .lg-split .b { background: linear-gradient(180deg, var(--sk-rec-hi), var(--sk-rec) 55%, var(--sk-rec-lo)); }
+html[data-skin="skeuo"] .lg-ring { --lg-track: var(--sk-well-lo); }
+html[data-skin="skeuo"] .lg-ring-wrap { border-radius: 50%; box-shadow: 0 0 0 5px var(--sk-face-hi), 0 0 0 6px rgba(0,0,0,.3), inset 0 4px 8px rgba(0,0,0,.35); }
+html[data-skin="skeuo"] .lg-footer { color: var(--sk-ink); text-shadow: var(--sk-engrave); }
+html[data-skin="skeuo"] nav.mt-4 small.text-muted { color: var(--sk-ink) !important; font-weight: 700; text-shadow: var(--sk-engrave); }
+
+/* the accent colour is fixed in this look (a lit teal lamp), so the swatches would do nothing */
+html[data-skin="skeuo"] .lg-accent-row { display: none !important; }
+
+/* 12 ─ PRINT: reports go to paper without the metal ──────────────────────── */
+@media print {
+  html[data-skin="skeuo"] :is(.card, .glass, .table-responsive, .table > thead > tr > *, .badge, .alert, .lg-bars) { background: #fff !important; box-shadow: none !important; color: #000 !important; text-shadow: none !important; }
+  html[data-skin="skeuo"] .lg-stat .val { background: #fff; color: #000; box-shadow: none; text-shadow: none; }
+}
+
+/* 13 ─ PAGE TRANSITIONS: panels settle into place with a small mechanical overshoot; the loading line is an amber LED strip */
+html[data-skin="skeuo"] { --pt-ease: cubic-bezier(.3, 1.2, .5, 1); }
+html[data-skin="skeuo"] .lg-progress { height: 4px; background: linear-gradient(180deg, #ffe08a, #ffb020 55%, #c97d00); box-shadow: 0 0 8px rgba(255,176,32,.8), 0 1px 0 rgba(0,0,0,.4); }
