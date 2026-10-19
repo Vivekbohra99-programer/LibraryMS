@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{{ member.name }} – LibraryMS{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <!-- Left: Profile Glass Card -->
+    <div class="col-md-4">
+        <div class="card glass mb-3">
+            <div class="card-body text-center p-4">
+                <div class="lg-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:1.6rem">
+                    {{ member.name[0]|upper }}
+                </div>
+                <h4 class="fw-bold mb-1">{{ member.name }}</h4>
+                <div class="mb-3">
+                    <span class="badge {{ 'bg-success' if member.status == 'active' else ('bg-warning' if member.status == 'suspended' else 'bg-secondary') }} is-dot">
+                        {{ member.status|capitalize }}
+                    </span>
+                </div>
+                <div class="text-muted small mb-1">
+                    {{ member.email }}
+                </div>
+                {% if member.phone %}<div class="text-muted small mb-1">{{ member.phone }}</div>{% endif %}
+                {% if member.address %}<div class="text-muted small mb-1">{{ member.address }}</div>{% endif %}
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">Member since {{ member.registration_date.strftime('%b %d, %Y') if member.registration_date else '—' }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quota & Fines Summary Card -->
+        <div class="card glass mb-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Borrowing Limit</span>
+                    <span class="fw-semibold">{{ member.loan_limit }} books</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Active Loans</span>
+                    <span class="fw-semibold text-primary">{{ member.active_loans_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Capacity Left</span>
+                    <span class="fw-semibold {{ 'text-success' if member.remaining_capacity > 0 else 'text-danger' }}">{{ member.remaining_capacity }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted small">Unpaid Fines</span>
+                    <span class="fw-bold {{ 'text-danger' if total_fines > 0 else 'text-success' }}">₹{{ "%.2f"|format(total_fines) }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_staff %}
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('members.edit', member_id=member.id) }}" class="btn btn-outline-primary">
+                Edit Member
+            </a>
+            <form method="POST" action="{{ url_for('members.delete', member_id=member.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-outline-danger w-100" onclick="return confirm('Deactivate this member?')">
+                    Deactivate
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: Tabs for Active Loans and History -->
+    <div class="col-md-8">
+        <ul class="nav nav-pills mb-3" id="memberProfileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-loans" data-bs-toggle="pill" data-bs-target="#pane-loans" type="button" role="tab" aria-selected="true">
+                    Active Loans ({{ active_loans|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-history" data-bs-toggle="pill" data-bs-target="#pane-history" type="button" role="tab" aria-selected="false">
+                    Borrowing History ({{ history|length }})
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="memberProfileTabsContent">
+            <!-- Active Loans -->
+            <div class="tab-pane fade show active" id="pane-loans" role="tabpanel">
+                <div class="card glass">
+                    {% if active_loans %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle table-stack">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Issue Date</th>
+                                    <th>Due Date</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in active_loans %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('books.detail', book_id=t.book_id) }}" class="fw-semibold">
+                                            {{ t.book.title if t.book else '—' }}
+                                        </a>
+                                    </td>
+                                    <td><small class="text-muted">{{ t.issue_date.strftime('%b %d, %Y') if t.issue_date else '' }}</small></td>
+                                    <td>
+                                        <span class="{{ 'text-danger fw-semibold' if t.is_overdue else '' }}">
+                                            {{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if t.is_overdue %}
+                                        <span class="badge bg-danger is-dot">Overdue</span>
+                                        {% else %}
+                                        <span class="badge bg-success is-dot">Active</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="card-body lg-empty">
+                        <div class="ic" aria-hidden="true">
+                            <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                        <h5>No Active Loans</h5>
+                        <p class="small text-muted mb-0">This member has no books currently checked out.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Borrowing History -->
+            <div class="tab-pane fade" id="pane-history" role="tabpanel">
+                <div class="card glass">
+                    {% if history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle table-stack">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Issued</th>
+                                    <th>Returned</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in history %}
+                                <tr>
+                                    <td>{{ t.book.title[:40] if t.book else '—' }}</td>
+                                    <td><small class="text-muted">{{ t.issue_date.strftime('%b %d') if t.issue_date else '' }}</small></td>
+                                    <td><small class="text-muted">{{ t.return_date.strftime('%b %d') if t.return_date else '—' }}</small></td>
+                                    <td class="text-end">
+                                        <span class="badge bg-{{ 'success' if t.status == 'returned' else 'warning' }} is-dot">
+                                            {{ t.status|capitalize }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="card-body lg-empty">
+                        <div class="ic" aria-hidden="true">
+                            <svg style="width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h5>No Borrowing History</h5>
+                        <p class="small text-muted mb-0">This member hasn't completed any loans yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

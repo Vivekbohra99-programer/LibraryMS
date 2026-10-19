@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Member – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Membership Registry</span>
+        <h1>{{ action }} Member</h1>
+        <p>{{ 'Enroll a new patron account with borrowing quota' if action == 'Add' else 'Update patron profile and membership parameters' }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-lg-7">
+        <div class="card glass">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="member-name">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="member-name" name="name" value="{{ member.name if member else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="member-email">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="member-email" name="email" value="{{ member.email if member else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="member-phone">Phone</label>
+                            <input type="text" class="form-control" id="member-phone" name="phone" value="{{ member.phone if member else '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="member-limit">Loan Limit</label>
+                            <input type="number" class="form-control" id="member-limit" name="loan_limit" value="{{ member.loan_limit if member else default_loan_limit }}" min="1">
+                        </div>
+                        {% if member %}
+                        <div class="col-md-3">
+                            <label class="form-label" for="member-status">Status</label>
+                            <select class="form-select" id="member-status" name="status">
+                                <option value="active" {{ 'selected' if member.status == 'active' }}>Active</option>
+                                <option value="suspended" {{ 'selected' if member.status == 'suspended' }}>Suspended</option>
+                                <option value="inactive" {{ 'selected' if member.status == 'inactive' }}>Inactive</option>
+                            </select>
+                        </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <label class="form-label" for="member-address">Address</label>
+                            <textarea class="form-control" id="member-address" name="address" rows="2">{{ member.address if member else '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {{ action }} Member
+                        </button>
+                        <a href="{{ url_for('members.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
