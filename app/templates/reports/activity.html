@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Activity Report – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Audit Log Report</span>
+        <h1>Activity Report</h1>
+        <p>Complete record of operator and member operations within the platform</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap d-print-none">
+        <form method="GET" class="d-flex gap-1">
+            <input type="search" class="form-control form-control-sm" name="q" value="{{ search }}" placeholder="Search…" style="width:180px" aria-label="Search logs" data-lg-search>
+            <button class="btn btn-sm btn-outline-primary" type="submit">Filter</button>
+        </form>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+        <div class="btn-group">
+            <a href="{{ url_for('reports.export_activity', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+            <a href="{{ url_for('reports.export_activity', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>IP</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in logs %}
+                <tr>
+                    <td><small class="text-muted">#{{ l.id }}</small></td>
+                    <td>{{ l.user.username if l.user else 'System' }}</td>
+                    <td><span class="badge bg-secondary">{{ l.action }}</span></td>
+                    <td><small class="text-muted">{{ l.details|truncate(60) }}</small></td>
+                    <td><small class="text-muted font-monospace">{{ l.ip_address or '' }}</small></td>
+                    <td><small class="text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else '' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-print-none mt-4">
+    {{ render_pagination(pagination, 'reports.activity_report', q=search) }}
+</div>
+{% endblock %}

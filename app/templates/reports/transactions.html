@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Transactions Report – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Circulation Audit</span>
+        <h1>Transactions Report</h1>
+        <p>Complete historical log of book loans, deadlines, and renewals</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap d-print-none">
+        <form method="GET" class="d-flex gap-1">
+            <select class="form-select form-select-sm" name="status" style="width:auto" aria-label="Filter status">
+                <option value="">All</option>
+                <option value="issued" {{ 'selected' if status == 'issued' }}>Issued</option>
+                <option value="returned" {{ 'selected' if status == 'returned' }}>Returned</option>
+            </select>
+            <button class="btn btn-sm btn-outline-primary" type="submit">Filter</button>
+        </form>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+        <div class="btn-group">
+            <a href="{{ url_for('reports.export_transactions', format='csv', status=status) }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+            <a href="{{ url_for('reports.export_transactions', format='excel', status=status) }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Book</th>
+                    <th>Member</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Renewals</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td><small class="text-muted">#{{ t.id }}</small></td>
+                    <td><strong>{{ t.book.title[:30] if t.book else '—' }}</strong></td>
+                    <td>{{ t.member.name if t.member else '—' }}</td>
+                    <td><small class="text-muted">{{ t.issue_date.strftime('%Y-%m-%d') if t.issue_date else '' }}</small></td>
+                    <td><small class="text-muted">{{ t.due_date.strftime('%Y-%m-%d') if t.due_date else '' }}</small></td>
+                    <td><small class="text-muted">{{ t.return_date.strftime('%Y-%m-%d') if t.return_date else '—' }}</small></td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if t.status == 'returned' else 'warning' }} is-dot">
+                            {{ t.status }}
+                        </span>
+                    </td>
+                    <td><span class="badge bg-secondary">{{ t.renewal_count }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-print-none mt-4">
+    {{ render_pagination(pagination, 'reports.transactions_report', status=status) }}
+</div>
+{% endblock %}

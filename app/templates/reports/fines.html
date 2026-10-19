@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Fines Report – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Financial Audit</span>
+        <h1>Fines Report</h1>
+        <p>Comprehensive penalty log, settlement status, and fine revenue</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap d-print-none">
+        <form method="GET" class="d-flex gap-1">
+            <select class="form-select form-select-sm" name="paid" style="width:auto" aria-label="Filter payment">
+                <option value="">All</option>
+                <option value="yes" {{ 'selected' if paid == 'yes' }}>Paid</option>
+                <option value="no" {{ 'selected' if paid == 'no' }}>Unpaid</option>
+            </select>
+            <button class="btn btn-sm btn-outline-primary" type="submit">Filter</button>
+        </form>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+        <div class="btn-group">
+            <a href="{{ url_for('reports.export_fines', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+            <a href="{{ url_for('reports.export_fines', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Transaction</th>
+                    <th>Member</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Paid Date</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in fines %}
+                <tr>
+                    <td><small class="text-muted">#{{ f.id }}</small></td>
+                    <td><small>#{{ f.transaction_id }}</small></td>
+                    <td>{{ f.member.name if f.member else '—' }}</td>
+                    <td><strong class="{{ 'text-success' if f.paid else 'text-danger' }}">₹{{ "%.2f"|format(f.amount) }}</strong></td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if f.paid else 'danger' }} is-dot">
+                            {{ 'Paid' if f.paid else 'Unpaid' }}
+                        </span>
+                    </td>
+                    <td><small class="text-muted">{{ f.paid_date.strftime('%Y-%m-%d') if f.paid_date else '—' }}</small></td>
+                    <td><small class="text-muted">{{ f.created_at.strftime('%Y-%m-%d') if f.created_at else '' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-print-none mt-4">
+    {{ render_pagination(pagination, 'reports.fines_report', paid=paid) }}
+</div>
+{% endblock %}

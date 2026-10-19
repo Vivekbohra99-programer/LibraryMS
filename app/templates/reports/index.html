@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Reports & Exports – LibraryMS{% endblock %}
+{% block content %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Data Analytics</span>
+        <h1>Reports & Exports</h1>
+        <p>Extract audit data, inventory logs, and circulation summaries in CSV or Excel</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card glass h-100 text-center">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="ic mx-auto mb-3" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--lg-accent-soft);color:var(--lg-accent-text)">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <h5 class="card-title mb-1">Books Report</h5>
+                    <p class="text-muted small mb-3">Complete inventory of titles, quantities, and authors</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.books_report') }}" class="btn btn-outline-primary btn-sm mb-2 w-100">View Report</a>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('reports.export_books', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports.export_books', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card glass h-100 text-center">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="ic mx-auto mb-3" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb, var(--lg-success) 16%, transparent);color:var(--lg-t-success)">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h5 class="card-title mb-1">Members Report</h5>
+                    <p class="text-muted small mb-3">Patron roster, contact emails, and borrowing limits</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.members_report') }}" class="btn btn-outline-primary btn-sm mb-2 w-100">View Report</a>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('reports.export_members', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports.export_members', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card glass h-100 text-center">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="ic mx-auto mb-3" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb, var(--lg-warning) 16%, transparent);color:var(--lg-t-warning)">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    </div>
+                    <h5 class="card-title mb-1">Transactions Report</h5>
+                    <p class="text-muted small mb-3">Historical circulation records, checkouts, and returns</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.transactions_report') }}" class="btn btn-outline-primary btn-sm mb-2 w-100">View Report</a>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('reports.export_transactions', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports.export_transactions', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card glass h-100 text-center">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="ic mx-auto mb-3" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb, var(--lg-danger) 16%, transparent);color:var(--lg-t-danger)">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <h5 class="card-title mb-1">Fines Report</h5>
+                    <p class="text-muted small mb-3">Late penalty assessments, paid amounts, and arrears</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.fines_report') }}" class="btn btn-outline-primary btn-sm mb-2 w-100">View Report</a>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('reports.export_fines', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports.export_fines', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card glass h-100 text-center">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="ic mx-auto mb-3" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb, var(--lg-info) 16%, transparent);color:var(--lg-t-info)">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h5 class="card-title mb-1">Activity Report</h5>
+                    <p class="text-muted small mb-3">System audit trail and user modification logs</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.activity_report') }}" class="btn btn-outline-primary btn-sm mb-2 w-100">View Report</a>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('reports.export_activity', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports.export_activity', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

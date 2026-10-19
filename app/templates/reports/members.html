@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Members Report – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Patron Report</span>
+        <h1>Members Report</h1>
+        <p>Registered member accounts, contact channels, and loan caps</p>
+    </div>
+    <div class="d-flex gap-2 d-print-none">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+        <div class="btn-group">
+            <a href="{{ url_for('reports.export_members', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+            <a href="{{ url_for('reports.export_members', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Loan Limit</th>
+                    <th>Registered</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td><small class="text-muted">#{{ m.id }}</small></td>
+                    <td><strong>{{ m.name }}</strong></td>
+                    <td><small class="text-muted">{{ m.email }}</small></td>
+                    <td><small>{{ m.phone or '—' }}</small></td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if m.status == 'active' else 'secondary' }} is-dot">
+                            {{ m.status }}
+                        </span>
+                    </td>
+                    <td>{{ m.loan_limit }} books</td>
+                    <td><small class="text-muted">{{ m.registration_date.strftime('%Y-%m-%d') if m.registration_date else '—' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-print-none mt-4">
+    {{ render_pagination(pagination, 'reports.members_report') }}
+</div>
+{% endblock %}

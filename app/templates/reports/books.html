@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Books Report – LibraryMS{% endblock %}
+{% block content %}
+{% from "partials/pagination.html" import render_pagination %}
+<div class="lg-page-header">
+    <div>
+        <span class="lg-eyebrow">Inventory Report</span>
+        <h1>Books Report</h1>
+        <p>Complete catalogue breakdown with stock and publication years</p>
+    </div>
+    <div class="d-flex gap-2 d-print-none">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+        <div class="btn-group">
+            <a href="{{ url_for('reports.export_books', format='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+            <a href="{{ url_for('reports.export_books', format='excel') }}" class="btn btn-sm btn-outline-secondary">Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card glass">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>ISBN</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Avail</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in books %}
+                <tr>
+                    <td><small class="text-muted">#{{ b.id }}</small></td>
+                    <td><strong>{{ b.title }}</strong></td>
+                    <td><small class="text-muted">{{ b.isbn or '—' }}</small></td>
+                    <td>{{ b.author.name if b.author else '—' }}</td>
+                    <td><span class="badge bg-secondary">{{ b.category.name if b.category else '—' }}</span></td>
+                    <td>{{ b.quantity }}</td>
+                    <td>
+                        <span class="{{ 'text-success fw-bold' if b.available_quantity > 0 else 'text-danger' }}">
+                            {{ b.available_quantity }}
+                        </span>
+                    </td>
+                    <td>{{ b.publication_year or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-print-none mt-4">
+    {{ render_pagination(pagination, 'reports.books_report') }}
+</div>
+{% endblock %}
