@@ -1,0 +1,39 @@
+{# Put this in <head>, AFTER the Bootstrap <link>.  {% include '_glass_head.html' %} #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/liquid-glass.css') }}?v=10">
+{# Skeuomorphic skin: every rule inside is scoped to html[data-skin="skeuo"], so with the glass look on it does nothing. #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/skeuo-app.css') }}?v=4">
+<script>
+  /* Applies saved theme/accent/skin before first paint (no white flash on dark mode). */
+  (function () {
+    document.documentElement.classList.add('lg-pt');   /* page-transition styles apply from the first paint (see liquid-glass.css, section 16) */
+    try {
+      var r = document.documentElement, t = localStorage.getItem('lg-theme') || 'auto';
+      if (t === 'auto') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      r.setAttribute('data-theme', t); r.setAttribute('data-bs-theme', t);
+      var a = localStorage.getItem('lg-accent'); if (a) r.setAttribute('data-accent', a);
+    } catch (e) {}
+    /* Look of the app: the visitor's own choice (switch in the top bar), else the server default (config DEFAULT_SKIN). */
+    var k = {{ default_skin|default('glass')|tojson }};
+    try { var saved = localStorage.getItem('lg-skin'); if (saved === 'glass' || saved === 'skeuo') k = saved; } catch (e) {}
+    document.documentElement.setAttribute('data-skin', k);
+    if (k === 'skeuo') {
+      var f = document.createElement('link'); f.id = 'lg-skin-fonts'; f.rel = 'stylesheet';
+      f.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Share+Tech+Mono&display=swap';
+      document.head.appendChild(f);
+    }
+  })();
+</script>
+<style>
+  /* SVG sprite helper & demo utilities from liquid-glass-kit */
+  svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -0.125em; }
+  .btn svg.i { width: 1.1em; height: 1.1em; }
+  [data-theme="dark"] .ic-moon, [data-theme="light"] .ic-sun { display: none; }
+  .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; padding: 0; background: var(--s); box-shadow: 0 0 0 1px rgba(0,0,0,.15), 0 4px 10px rgba(0,0,0,.18); transition: transform .3s var(--lg-spring); }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--lg-accent), 0 4px 10px rgba(0,0,0,.18); transform: scale(1.12); }
+  .input-icon { position: relative; }
+  .input-icon > svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--lg-text-3); pointer-events: none; }
+  .input-icon > .form-control { padding-left: 2.6rem; }
+  .input-icon .lg-kbd { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); }
+  section[id] { scroll-margin-top: 96px; }
+</style>
